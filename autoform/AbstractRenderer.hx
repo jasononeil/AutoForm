@@ -49,10 +49,11 @@ class AbstractRenderer
 				case "Array<Bool>":
 					"checkbox";
 				case "function":
-					// do nothing
+				// do nothing
+					null;
 				default:
 					// sensible fallback / default
-					trace ("Is this a function: ");
+					trace ("Is this a function: " + field.type);
 					"text";
 				
 			}

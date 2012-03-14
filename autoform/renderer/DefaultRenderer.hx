@@ -26,11 +26,16 @@ class DefaultRenderer extends autoform.AbstractRenderer
 			var element:domtools.AbstractCustomElement;
 			var display = autoform.AbstractRenderer.guessDisplay(field);
 			
+			// If "display" is null it's because we specifically don't
+			// want to display it, for example, if it is a function
+			if (display != null)
+			{
+				var classOfFieldUI = displays.exists(display) ? displays.get(display) : displays.get("text");
+				element = Type.createInstance(classOfFieldUI, [field]);
 
-			var classOfFieldUI = displays.exists(display) ? displays.get(display) : displays.get("text");
-			element = Type.createInstance(classOfFieldUI, [field]);
-
-			element.appendTo(form);
+				element.appendTo(form);
+			}
+			
 		}
 	}
 
