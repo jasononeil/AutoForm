@@ -50,6 +50,7 @@ class AbstractRenderer
 					"checkbox";
 				default:
 					// sensible fallback / default
+					trace ("Is this a function: " + field);
 					"text";
 				
 			}

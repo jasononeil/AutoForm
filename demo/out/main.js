@@ -389,7 +389,12 @@ autoform.AbstractRenderer.guessDisplay = function(field) {
 			$r = "checkbox";
 			break;
 		default:
-			$r = "text";
+			$r = (function($this) {
+				var $r;
+				haxe.Log.trace("Is this a function: " + field,{ fileName : "AbstractRenderer.hx", lineNumber : 53, className : "autoform.AbstractRenderer", methodName : "guessDisplay"});
+				$r = "text";
+				return $r;
+			}($this));
 		}
 		return $r;
 	}(this));
@@ -2301,7 +2306,7 @@ autoform.ui.TextArea = function(field) {
 	autoform.AbstractField.call(this,"div");
 	domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.addClass(this,"af-field-container"),field.id);
 	domtools.QueryElementManipulation.setInnerHTML(this,"<label></label><textarea />");
-	domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.setAttr(domtools.QueryTraversing.find(this,"textarea"),"id",field.fullID),".input");
+	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.setAttr(domtools.QueryTraversing.find(this,"textarea"),"id",field.fullID),".input"),"placeholder",field.placeholder);
 	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setText(domtools.QueryTraversing.find(this,"label"),field.title),"for",field.fullID);
 	if(field.description != "") domtools.QueryDOMManipulation.append(domtools.QueryTraversing.find(this,"label"),domtools.ElementManipulation.setText(document.createElement("p"),field.description));
 }
@@ -2331,20 +2336,15 @@ autoform.AutoForm = function(c,formID) {
 		autoform.AutoForm.formIDIncrement = autoform.AutoForm.formIDIncrement + 1;
 		formID = "af-" + autoform.AutoForm.formIDIncrement;
 	}
-	haxe.Log.trace(formID,{ fileName : "AutoForm.hx", lineNumber : 28, className : "autoform.AutoForm", methodName : "new"});
 	this.fields = new Array();
 	this.classval = c;
 	var rttiString = c.__rtti;
 	var rtti = Xml.parse(rttiString).firstElement();
 	this.meta = haxe.rtti.Meta.getFields(c);
-	haxe.Log.trace(rtti.toString(),{ fileName : "AutoForm.hx", lineNumber : 37, className : "autoform.AutoForm", methodName : "new"});
 	var fieldsXml = rtti.elements();
 	while( fieldsXml.hasNext() ) {
 		var field = fieldsXml.next();
-		if(field.getNodeName() != "implements") {
-			haxe.Log.trace(field,{ fileName : "AutoForm.hx", lineNumber : 45, className : "autoform.AutoForm", methodName : "new"});
-			this.fields.push(new autoform.FieldInfo(field,rtti,this.meta,formID));
-		} else haxe.Log.trace("gotcha",{ fileName : "AutoForm.hx", lineNumber : 49, className : "autoform.AutoForm", methodName : "new"});
+		if(field.getNodeName() != "implements") this.fields.push(new autoform.FieldInfo(field,rtti,this.meta,formID));
 	}
 	var renderer = new autoform.renderer.DefaultRenderer(this);
 	renderer.run(this.fields);

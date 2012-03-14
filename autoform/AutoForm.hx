@@ -25,8 +25,6 @@ class AutoForm<T> extends domtools.AbstractCustomElement
 			formID = "af-" + formIDIncrement;
 		}
 
-		trace (formID);
-
 		this.fields = new Array();
 
 		classval = c;
@@ -34,7 +32,7 @@ class AutoForm<T> extends domtools.AbstractCustomElement
         var rtti = Xml.parse(rttiString).firstElement();
 		meta = haxe.rtti.Meta.getFields(c);
 
-        trace (rtti.toString());
+        // trace (rtti.toString());
 
         var fieldsXml = rtti.elements();
 
@@ -42,11 +40,9 @@ class AutoForm<T> extends domtools.AbstractCustomElement
         {
         	if (field.nodeName != "implements")
         	{
-        		trace (field);
+        		// trace (field);
         		fields.push(new FieldInfo(field, rtti, meta, formID));
         	}
-        	else
-        		trace ("gotcha");
         	
         }
 
