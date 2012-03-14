@@ -1,0 +1,91 @@
+
+
+.rounded-corners (@radius: 5px) 
+{
+	border-radius: @radius;
+	-webkit-border-radius: @radius;
+	-moz-border-radius: @radius;
+}
+
+body 
+{
+}
+
+form
+{
+	padding: 20px;
+	@nice-blue: #5B83AD;
+	@light-blue: lighten(@nice-blue, 30%);
+	@fontsize: 12px;
+	@inputpadding: 10px;
+	@borderrad: 5px;
+
+	background-color: @nice-blue;
+	fieldset
+	{
+		
+	}
+
+	div.af-field-container
+	{
+		margin: 0 0 20px 0;
+		clear: both;
+
+		&:hover 
+		{
+			input, textarea
+			{
+				background-color: white;
+			}
+		}
+
+		label
+		{
+			display: block;
+			width: 300px;
+			float: left;
+			text-align: right;
+			padding-right: @inputpadding;
+			padding-top: 11.5px;
+
+			p 
+			{
+				font-size: @fontsize * 0.85;
+			}
+		}
+
+		input, textarea
+		{
+
+			width: 300px;
+			font-size: @fontsize * 1.333;
+			padding-right: @inputpadding;
+			.rounded-corners (@borderrad);
+			background-color: @light-blue;
+
+			&:focus {
+				background-color: white;
+			}
+
+		}
+
+		.checkbox 
+		{
+			width: 300px + @inputpadding*2;
+			margin-left: 300px + @inputpadding;
+			background: yellow;
+
+			input
+			{
+				float: left;
+			}
+
+			label
+			{
+				text-align: left;
+				width: auto;
+				float: left;
+			}
+		}
+	}
+}

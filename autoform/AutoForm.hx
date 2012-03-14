@@ -1,30 +1,57 @@
 package autoform;
-import sys.db.SpodInfos;
 
-class AutoForm<T>
+import domtools.Query;
+import js.w3c.level3.Core;
+import autoform.renderer.DefaultRenderer;
+using domtools.Tools;
+
+class AutoForm<T> extends domtools.AbstractCustomElement
 {
+	static var formIDIncrement = 0;
 	var classval : Class<T>;
-	var table_infos : SpodInfos;
-	var table_name : String;
-	var table_fields : List<String>;
-	var table_keys : Array<String>;
+	var rtti:Node;
+	var meta:Dynamic;
+	var fields:Array<FieldInfo>;
 	
 	/** Generates an empty form to match the Class <T>.  You must pass the type as the constructor, similar to SPOD managers. */
-	public function new( c : Class<T> ) 
+	public function new( c : Class<T>, ?formID:String = null )
 	{
-		classval = c;
-		var m : Array<Dynamic> = haxe.rtti.Meta.getType(classval).rtti;
-		if( m == null ) throw "Missing @rtti for class " + Type.getClassName(classval);
-		table_infos = haxe.Unserializer.run(m[0]);
-		table_name = table_infos.name;
-		table_keys = table_infos.key;
-		table_fields = new List();
-		for( f in table_infos.fields )
+		super ("form");
+
+		// If formID isn't set, set one by using auto-increment "af-{int}"
+		if (formID == null)
 		{
-			table_fields.add(f.name);
-			trace (f);
+			formIDIncrement = formIDIncrement + 1;
+			formID = "af-" + formIDIncrement;
 		}
-		
+
+		trace (formID);
+
+		this.fields = new Array();
+
+		classval = c;
+		var rttiString : String = untyped c.__rtti;
+        var rtti = Xml.parse(rttiString).firstElement();
+		meta = haxe.rtti.Meta.getFields(c);
+
+        trace (rtti.toString());
+
+        var fieldsXml = rtti.elements();
+
+        for (field in fieldsXml)
+        {
+        	if (field.nodeName != "implements")
+        	{
+        		trace (field);
+        		fields.push(new FieldInfo(field, rtti, meta, formID));
+        	}
+        	else
+        		trace ("gotcha");
+        	
+        }
+
+        var renderer = new DefaultRenderer(this);
+        renderer.run(fields);
 	}
 
 	/** Fills the form fields with values from an object of the correct type. */
@@ -49,3 +76,4 @@ class AutoForm<T>
 	
 
 }
+

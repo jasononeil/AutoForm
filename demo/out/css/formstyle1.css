@@ -1,0 +1,33 @@
+form {
+  background-color: #5b83ad;
+}
+form div.af-field-container {
+  margin: 0 0 20px 0;
+  clear: both;
+}
+form div.af-field-container:hover input {
+  background-color: white;
+}
+form div.af-field-container label {
+  display: block;
+  width: 300px;
+  float: left;
+  text-align: right;
+  padding-right: 10px;
+  padding-top: 11.5px;
+}
+form div.af-field-container label p {
+  font-size: 10.2px;
+}
+form div.af-field-container input {
+  width: 300px;
+  font-size: 15.995999999999999px;
+  padding: 10px;
+  border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  background-color: #c1d0e0;
+}
+form div.af-field-container input:focus {
+  background-color: white;
+}

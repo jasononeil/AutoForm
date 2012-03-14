@@ -1,115 +1,889 @@
-$estr = function() { return js.Boot.__string_rec(this,''); }
-if(typeof sys=='undefined') sys = {}
-if(!sys.db) sys.db = {}
-sys.db.Object = function(p) {
+var $_, $hxClasses = $hxClasses || {}, $estr = function() { return js.Boot.__string_rec(this,''); }
+function $extend(from, fields) {
+	function inherit() {}; inherit.prototype = from; var proto = new inherit();
+	for (var name in fields) proto[name] = fields[name];
+	return proto;
 }
-sys.db.Object.__name__ = ["sys","db","Object"];
-sys.db.Object.prototype._locked = null;
-sys.db.Object.prototype._manager = null;
-sys.db.Object.prototype.insert = function() {
-	this._manager.doInsert(this);
+var demo = demo || {}
+demo.Main = $hxClasses["demo.Main"] = function() { }
+demo.Main.__name__ = ["demo","Main"];
+demo.Main.main = function() {
+	haxe.Log.trace = haxe.Firebug.trace;
+	js.Lib.window.onload = demo.Main.run;
 }
-sys.db.Object.prototype.update = function() {
-	this._manager.doUpdate(this);
+demo.Main.run = function(e) {
+	var form = new autoform.AutoForm(demo.MySampleModel);
+	CommonJS.getHtmlDocument().body.appendChild(form.collection[0]);
 }
-sys.db.Object.prototype.lock = function() {
-	this._manager.doLock(this);
+demo.Main.prototype = {
+	__class__: demo.Main
 }
-sys.db.Object.prototype["delete"] = function() {
-	this._manager.doDelete(this);
+var List = $hxClasses["List"] = function() {
+	this.length = 0;
 }
-sys.db.Object.prototype.toString = function() {
-	return this._manager.objectToString(this);
-}
-sys.db.Object.prototype.__class__ = sys.db.Object;
-StringTools = function() { }
-StringTools.__name__ = ["StringTools"];
-StringTools.urlEncode = function(s) {
-	return encodeURIComponent(s);
-}
-StringTools.urlDecode = function(s) {
-	return decodeURIComponent(s.split("+").join(" "));
-}
-StringTools.htmlEscape = function(s) {
-	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
-}
-StringTools.htmlUnescape = function(s) {
-	return s.split("&gt;").join(">").split("&lt;").join("<").split("&amp;").join("&");
-}
-StringTools.startsWith = function(s,start) {
-	return s.length >= start.length && s.substr(0,start.length) == start;
-}
-StringTools.endsWith = function(s,end) {
-	var elen = end.length;
-	var slen = s.length;
-	return slen >= elen && s.substr(slen - elen,elen) == end;
-}
-StringTools.isSpace = function(s,pos) {
-	var c = s.charCodeAt(pos);
-	return c >= 9 && c <= 13 || c == 32;
-}
-StringTools.ltrim = function(s) {
-	var l = s.length;
-	var r = 0;
-	while(r < l && StringTools.isSpace(s,r)) r++;
-	if(r > 0) return s.substr(r,l - r); else return s;
-}
-StringTools.rtrim = function(s) {
-	var l = s.length;
-	var r = 0;
-	while(r < l && StringTools.isSpace(s,l - r - 1)) r++;
-	if(r > 0) return s.substr(0,l - r); else return s;
-}
-StringTools.trim = function(s) {
-	return StringTools.ltrim(StringTools.rtrim(s));
-}
-StringTools.rpad = function(s,c,l) {
-	var sl = s.length;
-	var cl = c.length;
-	while(sl < l) if(l - sl < cl) {
-		s += c.substr(0,l - sl);
-		sl = l;
-	} else {
-		s += c;
-		sl += cl;
+List.__name__ = ["List"];
+List.prototype = {
+	h: null
+	,q: null
+	,length: null
+	,add: function(item) {
+		var x = [item];
+		if(this.h == null) this.h = x; else this.q[1] = x;
+		this.q = x;
+		this.length++;
 	}
-	return s;
-}
-StringTools.lpad = function(s,c,l) {
-	var ns = "";
-	var sl = s.length;
-	if(sl >= l) return s;
-	var cl = c.length;
-	while(sl < l) if(l - sl < cl) {
-		ns += c.substr(0,l - sl);
-		sl = l;
-	} else {
-		ns += c;
-		sl += cl;
+	,push: function(item) {
+		var x = [item,this.h];
+		this.h = x;
+		if(this.q == null) this.q = x;
+		this.length++;
 	}
-	return ns + s;
+	,first: function() {
+		return this.h == null?null:this.h[0];
+	}
+	,last: function() {
+		return this.q == null?null:this.q[0];
+	}
+	,pop: function() {
+		if(this.h == null) return null;
+		var x = this.h[0];
+		this.h = this.h[1];
+		if(this.h == null) this.q = null;
+		this.length--;
+		return x;
+	}
+	,isEmpty: function() {
+		return this.h == null;
+	}
+	,clear: function() {
+		this.h = null;
+		this.q = null;
+		this.length = 0;
+	}
+	,remove: function(v) {
+		var prev = null;
+		var l = this.h;
+		while(l != null) {
+			if(l[0] == v) {
+				if(prev == null) this.h = l[1]; else prev[1] = l[1];
+				if(this.q == l) this.q = prev;
+				this.length--;
+				return true;
+			}
+			prev = l;
+			l = l[1];
+		}
+		return false;
+	}
+	,iterator: function() {
+		return { h : this.h, hasNext : function() {
+			return this.h != null;
+		}, next : function() {
+			if(this.h == null) return null;
+			var x = this.h[0];
+			this.h = this.h[1];
+			return x;
+		}};
+	}
+	,toString: function() {
+		var s = new StringBuf();
+		var first = true;
+		var l = this.h;
+		s.b[s.b.length] = "{";
+		while(l != null) {
+			if(first) first = false; else s.b[s.b.length] = ", ";
+			s.add(Std.string(l[0]));
+			l = l[1];
+		}
+		s.b[s.b.length] = "}";
+		return s.b.join("");
+	}
+	,join: function(sep) {
+		var s = new StringBuf();
+		var first = true;
+		var l = this.h;
+		while(l != null) {
+			if(first) first = false; else s.b[s.b.length] = sep == null?"null":sep;
+			s.add(l[0]);
+			l = l[1];
+		}
+		return s.b.join("");
+	}
+	,filter: function(f) {
+		var l2 = new List();
+		var l = this.h;
+		while(l != null) {
+			var v = l[0];
+			l = l[1];
+			if(f(v)) l2.add(v);
+		}
+		return l2;
+	}
+	,map: function(f) {
+		var b = new List();
+		var l = this.h;
+		while(l != null) {
+			var v = l[0];
+			l = l[1];
+			b.add(f(v));
+		}
+		return b;
+	}
+	,__class__: List
 }
-StringTools.replace = function(s,sub,by) {
-	return s.split(sub).join(by);
+var domtools = domtools || {}
+domtools.Query = $hxClasses["domtools.Query"] = function(selector,node,collection) {
+	if(selector == null) selector = "";
+	this.collection = new Array();
+	if(node != null) {
+		this.collection.push(node);
+		this;
+	} else if(collection != null) this.addCollection(collection); else if(selector != "") {
+		var nodeList = CommonJS.getAll(selector);
+		this.addNodeList(nodeList);
+	}
 }
-StringTools.hex = function(n,digits) {
-	var s = "";
-	var hexChars = "0123456789ABCDEF";
-	do {
-		s = hexChars.charAt(n & 15) + s;
-		n >>>= 4;
-	} while(n > 0);
-	if(digits != null) while(s.length < digits) s = "0" + s;
-	return s;
+domtools.Query.__name__ = ["domtools","Query"];
+domtools.Query.__properties__ = {get_window:"get_window",get_document:"get_document"}
+domtools.Query.document = null;
+domtools.Query.window = null;
+domtools.Query.create = function(name) {
+	return document.createElement(name);
 }
-StringTools.fastCodeAt = function(s,index) {
-	return s.cca(index);
+domtools.Query.get_window = function() {
+	return window;
 }
-StringTools.isEOF = function(c) {
-	return c != c;
+domtools.Query.get_document = function() {
+	return document;
 }
-StringTools.prototype.__class__ = StringTools;
-Reflect = function() { }
+domtools.Query.prototype = {
+	collection: null
+	,length: null
+	,iterator: function() {
+		return this.collection.iterator();
+	}
+	,getNode: function(i) {
+		if(i == null) i = 0;
+		return this.collection[i];
+	}
+	,eq: function(i) {
+		if(i == null) i = 0;
+		return new domtools.Query(null,this.collection[i]);
+	}
+	,first: function() {
+		return new domtools.Query(null,this.collection[0]);
+	}
+	,last: function() {
+		return new domtools.Query(null,this.collection[this.collection.length - 1]);
+	}
+	,add: function(node) {
+		return (function($this) {
+			var $r;
+			$this.collection.push(node);
+			$r = $this;
+			return $r;
+		}(this));
+	}
+	,addCollection: function(collection) {
+		var $it0 = collection.iterator();
+		while( $it0.hasNext() ) {
+			var node = $it0.next();
+			this.collection.push(node);
+		}
+		return this;
+	}
+	,addNodeList: function(nodeList,elementsOnly) {
+		if(elementsOnly == null) elementsOnly = true;
+		var _g1 = 0, _g = nodeList.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var node = nodeList.item(i);
+			if(elementsOnly == false || domtools.ElementManipulation.isElement(node)) {
+				this.collection.push(node);
+				this;
+			}
+		}
+		return this;
+	}
+	,removeFromCollection: function(node) {
+		return (function($this) {
+			var $r;
+			$this.collection.remove(node);
+			$r = $this;
+			return $r;
+		}(this));
+	}
+	,each: function(f) {
+		return (function($this) {
+			var $r;
+			Lambda.iter($this.collection,f);
+			$r = $this;
+			return $r;
+		}(this));
+	}
+	,filter: function(fn) {
+		return new domtools.Query(null,null,Lambda.filter(this.collection,fn));
+	}
+	,clone: function() {
+		var q = new domtools.Query();
+		var $it0 = this.collection.iterator();
+		while( $it0.hasNext() ) {
+			var node = $it0.next();
+			{
+				q.collection.push(node.cloneNode(true));
+				q;
+			}
+		}
+		return q;
+	}
+	,get_length: function() {
+		return this.collection.length;
+	}
+	,__class__: domtools.Query
+	,__properties__: {get_length:"get_length"}
+}
+domtools.AbstractCustomElement = $hxClasses["domtools.AbstractCustomElement"] = function(name) {
+	domtools.Query.call(this);
+	var elm = document.createElement(name);
+	{
+		this.collection.push(elm);
+		this;
+	}
+}
+domtools.AbstractCustomElement.__name__ = ["domtools","AbstractCustomElement"];
+domtools.AbstractCustomElement.__super__ = domtools.Query;
+domtools.AbstractCustomElement.prototype = $extend(domtools.Query.prototype,{
+	__class__: domtools.AbstractCustomElement
+});
+var autoform = autoform || {}
+autoform.AbstractField = $hxClasses["autoform.AbstractField"] = function(name) {
+	domtools.AbstractCustomElement.call(this,name);
+}
+autoform.AbstractField.__name__ = ["autoform","AbstractField"];
+autoform.AbstractField.__super__ = domtools.AbstractCustomElement;
+autoform.AbstractField.prototype = $extend(domtools.AbstractCustomElement.prototype,{
+	get: function() {
+		return null;
+	}
+	,set: function(object) {
+	}
+	,__class__: autoform.AbstractField
+});
+if(!autoform.ui) autoform.ui = {}
+autoform.ui.TextField = $hxClasses["autoform.ui.TextField"] = function(field) {
+	autoform.AbstractField.call(this,"div");
+	domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.addClass(this,"af-field-container"),field.id);
+	domtools.QueryElementManipulation.setInnerHTML(this,"<label></label><input />");
+	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setAttr(domtools.QueryTraversing.find(this,"input"),"type","text"),"id",field.fullID);
+	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setText(domtools.QueryTraversing.find(this,"label"),field.title),"for",field.fullID);
+	if(field.description != "") domtools.QueryDOMManipulation.append(domtools.QueryTraversing.find(this,"label"),domtools.ElementManipulation.setText(document.createElement("p"),field.description));
+}
+autoform.ui.TextField.__name__ = ["autoform","ui","TextField"];
+autoform.ui.TextField.__super__ = autoform.AbstractField;
+autoform.ui.TextField.prototype = $extend(autoform.AbstractField.prototype,{
+	__class__: autoform.ui.TextField
+});
+domtools.ElementManipulation = $hxClasses["domtools.ElementManipulation"] = function() { }
+domtools.ElementManipulation.__name__ = ["domtools","ElementManipulation"];
+domtools.ElementManipulation.isElement = function(node) {
+	return node.nodeType == domtools.ElementManipulation.NodeTypeElement;
+}
+domtools.ElementManipulation.attr = function(elm,attName) {
+	var ret = "";
+	if(domtools.ElementManipulation.isElement(elm)) {
+		var element = elm;
+		ret = element.getAttribute(attName);
+		if(ret == null) ret = "";
+	}
+	return ret;
+}
+domtools.ElementManipulation.setAttr = function(elm,attName,attValue) {
+	if(elm.nodeType == domtools.ElementManipulation.NodeTypeElement) {
+		var element = elm;
+		element.setAttribute(attName,attValue);
+	}
+	return elm;
+}
+domtools.ElementManipulation.removeAttr = function(elm,attName) {
+	if(elm.nodeType == domtools.ElementManipulation.NodeTypeElement) {
+		var element = elm;
+		element.removeAttribute(attName);
+	}
+	return elm;
+}
+domtools.ElementManipulation.hasClass = function(elm,className) {
+	return (" " + domtools.ElementManipulation.attr(elm,"class") + " ").indexOf(" " + className + " ") > -1;
+}
+domtools.ElementManipulation.addClass = function(elm,className) {
+	if(domtools.ElementManipulation.hasClass(elm,className) == false) {
+		var oldClassName = domtools.ElementManipulation.attr(elm,"class");
+		var newClassName = oldClassName == ""?className:oldClassName + " " + className;
+		domtools.ElementManipulation.setAttr(elm,"class",newClassName);
+	}
+	return elm;
+}
+domtools.ElementManipulation.removeClass = function(elm,className) {
+	var classes = domtools.ElementManipulation.attr(elm,"class").split(" ");
+	classes.remove(className);
+	var newClassValue = classes.join(" ");
+	domtools.ElementManipulation.setAttr(elm,"class",newClassValue);
+	return elm;
+}
+domtools.ElementManipulation.toggleClass = function(elm,className) {
+	if(domtools.ElementManipulation.hasClass(elm,className)) domtools.ElementManipulation.removeClass(elm,className); else domtools.ElementManipulation.addClass(elm,className);
+	return elm;
+}
+domtools.ElementManipulation.tagName = function(elm) {
+	return elm.nodeName.toLowerCase();
+}
+domtools.ElementManipulation.val = function(elm) {
+	return domtools.ElementManipulation.attr(elm,"value");
+}
+domtools.ElementManipulation.text = function(elm) {
+	return elm.textContent;
+}
+domtools.ElementManipulation.setText = function(elm,text) {
+	return (function($this) {
+		var $r;
+		elm.textContent = text;
+		$r = elm;
+		return $r;
+	}(this));
+}
+domtools.ElementManipulation.innerHTML = function(elm) {
+	var ret = "";
+	switch(elm.nodeType) {
+	case domtools.ElementManipulation.NodeTypeElement:
+		var element = elm;
+		ret = element.innerHTML;
+		break;
+	default:
+		ret = elm.textContent;
+	}
+	return ret;
+}
+domtools.ElementManipulation.setInnerHTML = function(elm,html) {
+	switch(elm.nodeType) {
+	case domtools.ElementManipulation.NodeTypeElement:
+		var element = elm;
+		element.innerHTML = html;
+		break;
+	default:
+		elm.textContent = html;
+	}
+	return elm;
+}
+domtools.ElementManipulation.clone = function(elm,deep) {
+	if(deep == null) deep = true;
+	return elm.cloneNode(deep);
+}
+domtools.ElementManipulation.prototype = {
+	__class__: domtools.ElementManipulation
+}
+domtools.QueryElementManipulation = $hxClasses["domtools.QueryElementManipulation"] = function() { }
+domtools.QueryElementManipulation.__name__ = ["domtools","QueryElementManipulation"];
+domtools.QueryElementManipulation.attr = function(query,attName) {
+	return query.collection.length > 0?domtools.ElementManipulation.attr(query.collection[0],attName):"";
+}
+domtools.QueryElementManipulation.setAttr = function(query,attName,attValue) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.ElementManipulation.setAttr(node,attName,attValue);
+	}
+	return query;
+}
+domtools.QueryElementManipulation.removeAttr = function(query,attName) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.ElementManipulation.removeAttr(node,attName);
+	}
+	return query;
+}
+domtools.QueryElementManipulation.hasClass = function(query,className) {
+	return query.collection.length > 0?domtools.ElementManipulation.hasClass(query.collection[0],className):false;
+}
+domtools.QueryElementManipulation.addClass = function(query,className) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.ElementManipulation.addClass(node,className);
+	}
+	return query;
+}
+domtools.QueryElementManipulation.removeClass = function(query,className) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.ElementManipulation.removeClass(node,className);
+	}
+	return query;
+}
+domtools.QueryElementManipulation.toggleClass = function(query,className) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.ElementManipulation.toggleClass(node,className);
+	}
+	return query;
+}
+domtools.QueryElementManipulation.tagName = function(query) {
+	return query.collection.length > 0?query.collection[0].nodeName.toLowerCase():"";
+}
+domtools.QueryElementManipulation.tagNames = function(query) {
+	var names = new Array();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		names.push(node.nodeName.toLowerCase());
+	}
+	return names;
+}
+domtools.QueryElementManipulation.val = function(query) {
+	return query.collection.length > 0?domtools.ElementManipulation.attr(query.collection[0],"value"):"";
+}
+domtools.QueryElementManipulation.text = function(query) {
+	var text = "";
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		text = text + node.textContent;
+	}
+	return text;
+}
+domtools.QueryElementManipulation.setText = function(query,text) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		{
+			node.textContent = text;
+			node;
+		}
+	}
+	return query;
+}
+domtools.QueryElementManipulation.innerHTML = function(query) {
+	var ret = "";
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		ret += domtools.ElementManipulation.innerHTML(node);
+	}
+	return ret;
+}
+domtools.QueryElementManipulation.setInnerHTML = function(query,html) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.ElementManipulation.setInnerHTML(node,html);
+	}
+	return query;
+}
+domtools.QueryElementManipulation.clone = function(query,deep) {
+	if(deep == null) deep = true;
+	var newQuery = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		{
+			newQuery.collection.push(node.cloneNode(true));
+			newQuery;
+		}
+	}
+	return newQuery;
+}
+domtools.QueryElementManipulation.prototype = {
+	__class__: domtools.QueryElementManipulation
+}
+domtools.EventManagement = $hxClasses["domtools.EventManagement"] = function() { }
+domtools.EventManagement.__name__ = ["domtools","EventManagement"];
+domtools.EventManagement.triggerHandler = function(target,event) {
+	return target;
+}
+domtools.EventManagement.on = function(target,eventType,listener) {
+	var elm = target;
+	elm.addEventListener(eventType,listener,false);
+	return target;
+}
+domtools.EventManagement.off = function(target,eventType,listener) {
+	var elm = target;
+	elm.removeEventListener(eventType,listener,false);
+	return target;
+}
+domtools.EventManagement.one = function(target,eventType,listener) {
+	var fn = null;
+	fn = function(e) {
+		listener(e);
+		target.removeEventListener(eventType,fn,false);
+	};
+	target.addEventListener(eventType,fn,false);
+	return target;
+}
+domtools.EventManagement.mousedown = function(target,listener) {
+	return domtools.EventManagement.on(target,"mousedown",listener);
+}
+domtools.EventManagement.mouseenter = function(target,listener) {
+	return domtools.EventManagement.on(target,"mouseover",listener);
+}
+domtools.EventManagement.mouseleave = function(target,listener) {
+	return domtools.EventManagement.on(target,"mouseout",listener);
+}
+domtools.EventManagement.mousemove = function(target,listener) {
+	return domtools.EventManagement.on(target,"mousemove",listener);
+}
+domtools.EventManagement.mouseout = function(target,listener) {
+	return domtools.EventManagement.on(target,"mouseout",listener);
+}
+domtools.EventManagement.mouseover = function(target,listener) {
+	return domtools.EventManagement.on(target,"mouseover",listener);
+}
+domtools.EventManagement.mouseup = function(target,listener) {
+	return domtools.EventManagement.on(target,"mouseup",listener);
+}
+domtools.EventManagement.keydown = function(target,listener) {
+	return domtools.EventManagement.on(target,"keydown",listener);
+}
+domtools.EventManagement.keypress = function(target,listener) {
+	return domtools.EventManagement.on(target,"keypress",listener);
+}
+domtools.EventManagement.keyup = function(target,listener) {
+	return domtools.EventManagement.on(target,"keyup",listener);
+}
+domtools.EventManagement.hover = function(target,listener1,listener2) {
+	domtools.EventManagement.on(target,"mouseover",listener1);
+	if(listener2 == null) domtools.EventManagement.on(target,"mouseout",listener1); else domtools.EventManagement.on(target,"mouseout",listener2);
+	return target;
+}
+domtools.EventManagement.submit = function(target,listener) {
+	return domtools.EventManagement.on(target,"submit",listener);
+}
+domtools.EventManagement.toggleClick = function(target,listenerFirstClick,listenerSecondClick) {
+	var fn1 = null;
+	var fn2 = null;
+	fn1 = function(e) {
+		listenerFirstClick(e);
+		target.removeEventListener("click",fn1,false);
+		target.addEventListener("click",fn2,false);
+	};
+	fn2 = function(e) {
+		listenerSecondClick(e);
+		target.removeEventListener("click",fn2,false);
+		target.addEventListener("click",fn1,false);
+	};
+	target.addEventListener("click",fn1,false);
+	return target;
+}
+domtools.EventManagement.blur = function(target,listener) {
+	return domtools.EventManagement.on(target,"blur",listener);
+}
+domtools.EventManagement.change = function(target,listener) {
+	return domtools.EventManagement.on(target,"change",listener);
+}
+domtools.EventManagement.click = function(target,listener) {
+	return domtools.EventManagement.on(target,"click",listener);
+}
+domtools.EventManagement.dblclick = function(target,listener) {
+	return domtools.EventManagement.on(target,"dblclick",listener);
+}
+domtools.EventManagement.focus = function(target,listener) {
+	return domtools.EventManagement.on(target,"focus",listener);
+}
+domtools.EventManagement.focusIn = function(target,listener) {
+	return domtools.EventManagement.on(target,"focusIn",listener);
+}
+domtools.EventManagement.focusOut = function(target,listener) {
+	return domtools.EventManagement.on(target,"focusOut",listener);
+}
+domtools.EventManagement.resize = function(target,listener) {
+	return domtools.EventManagement.on(target,"resize",listener);
+}
+domtools.EventManagement.scroll = function(target,listener) {
+	return domtools.EventManagement.on(target,"scroll",listener);
+}
+domtools.EventManagement.select = function(target,listener) {
+	return domtools.EventManagement.on(target,"select",listener);
+}
+domtools.EventManagement.load = function(target,listener) {
+	return domtools.EventManagement.on(target,"load",listener);
+}
+domtools.EventManagement.unload = function(target,listener) {
+	return domtools.EventManagement.on(target,"unload",listener);
+}
+domtools.EventManagement.error = function(target,listener) {
+	return domtools.EventManagement.on(target,"error",listener);
+}
+domtools.EventManagement.ready = function(target,listener) {
+	return domtools.EventManagement.on(target,"ready",listener);
+}
+domtools.EventManagement.prototype = {
+	__class__: domtools.EventManagement
+}
+domtools.QueryEventManagement = $hxClasses["domtools.QueryEventManagement"] = function() { }
+domtools.QueryEventManagement.__name__ = ["domtools","QueryEventManagement"];
+domtools.QueryEventManagement.on = function(targetCollection,eventType,listener) {
+	var $it0 = targetCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var target = $it0.next();
+		domtools.EventManagement.on(target,eventType,listener);
+	}
+	return targetCollection;
+}
+domtools.QueryEventManagement.off = function(targetCollection,eventType,listener) {
+	var $it0 = targetCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var target = $it0.next();
+		domtools.EventManagement.off(target,eventType,listener);
+	}
+	return targetCollection;
+}
+domtools.QueryEventManagement.one = function(targetCollection,eventType,listener) {
+	var $it0 = targetCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var target = $it0.next();
+		domtools.EventManagement.one(target,eventType,listener);
+	}
+	return targetCollection;
+}
+domtools.QueryEventManagement.mousedown = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mousedown",listener);
+}
+domtools.QueryEventManagement.mouseenter = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mouseenter",listener);
+}
+domtools.QueryEventManagement.mouseleave = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mouseleave",listener);
+}
+domtools.QueryEventManagement.mousemove = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mousemove",listener);
+}
+domtools.QueryEventManagement.mouseout = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mouseout",listener);
+}
+domtools.QueryEventManagement.mouseover = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mouseover",listener);
+}
+domtools.QueryEventManagement.mouseup = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mouseup",listener);
+}
+domtools.QueryEventManagement.keydown = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"keydown",listener);
+}
+domtools.QueryEventManagement.keypress = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"keypress",listener);
+}
+domtools.QueryEventManagement.keyup = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"keyup",listener);
+}
+domtools.QueryEventManagement.hover = function(targetCollection,listener1,listener2) {
+	var $it0 = targetCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.EventManagement.hover(node,listener1,listener2);
+	}
+	return targetCollection;
+}
+domtools.QueryEventManagement.submit = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"submit",listener);
+}
+domtools.QueryEventManagement.toggleClick = function(targetCollection,listenerFirstClick,listenerSecondClick) {
+	var $it0 = targetCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var target = $it0.next();
+		domtools.EventManagement.toggleClick(target,listenerFirstClick,listenerSecondClick);
+	}
+	return targetCollection;
+}
+domtools.QueryEventManagement.blur = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"blur",listener);
+}
+domtools.QueryEventManagement.change = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"change",listener);
+}
+domtools.QueryEventManagement.click = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"click",listener);
+}
+domtools.QueryEventManagement.dblclick = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"dblclick",listener);
+}
+domtools.QueryEventManagement.focus = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"focus",listener);
+}
+domtools.QueryEventManagement.focusIn = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"focusIn",listener);
+}
+domtools.QueryEventManagement.focusOut = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"focusOut",listener);
+}
+domtools.QueryEventManagement.resize = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"resize",listener);
+}
+domtools.QueryEventManagement.scroll = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"scroll",listener);
+}
+domtools.QueryEventManagement.select = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"select",listener);
+}
+domtools.QueryEventManagement.load = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"load",listener);
+}
+domtools.QueryEventManagement.unload = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"unload",listener);
+}
+domtools.QueryEventManagement.error = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"error",listener);
+}
+domtools.QueryEventManagement.ready = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"ready",listener);
+}
+domtools.QueryEventManagement.prototype = {
+	__class__: domtools.QueryEventManagement
+}
+domtools.DOMManipulation = $hxClasses["domtools.DOMManipulation"] = function() { }
+domtools.DOMManipulation.__name__ = ["domtools","DOMManipulation"];
+domtools.DOMManipulation.append = function(parent,childNode,childCollection) {
+	if(childNode != null) parent.appendChild(childNode); else if(childCollection != null) {
+		var $it0 = childCollection.collection.iterator();
+		while( $it0.hasNext() ) {
+			var child = $it0.next();
+			parent.appendChild(child);
+		}
+	}
+	return parent;
+}
+domtools.DOMManipulation.prepend = function(parent,newChildNode,newChildCollection) {
+	if(newChildNode != null) domtools.DOMManipulation.insertThisBefore(newChildNode,parent.firstChild); else if(newChildCollection != null) domtools.QueryDOMManipulation.insertThisBefore(newChildCollection,parent.firstChild);
+	return parent;
+}
+domtools.DOMManipulation.appendTo = function(child,parentNode,parentCollection) {
+	if(parentNode != null) domtools.DOMManipulation.append(parentNode,child); else if(parentCollection != null) domtools.QueryDOMManipulation.append(parentCollection,child);
+	return child;
+}
+domtools.DOMManipulation.prependTo = function(child,parentNode,parentCollection) {
+	return domtools.DOMManipulation.insertThisBefore(child,parentNode.firstChild,parentCollection);
+}
+domtools.DOMManipulation.insertThisBefore = function(content,targetNode,targetCollection) {
+	if(targetNode != null) targetNode.parentNode.insertBefore(content,targetNode); else if(targetCollection != null) {
+		var firstChildUsed = false;
+		var $it0 = targetCollection.collection.iterator();
+		while( $it0.hasNext() ) {
+			var target = $it0.next();
+			var childToInsert;
+			if(firstChildUsed) {
+				childToInsert = content;
+				firstChildUsed = true;
+			} else childToInsert = content.cloneNode(true);
+			target.parentNode.insertBefore(childToInsert,target);
+		}
+	}
+	return content;
+}
+domtools.DOMManipulation.insertThisAfter = function(content,targetNode,targetCollection) {
+	return domtools.DOMManipulation.insertThisBefore(content,targetNode.nextSibling,targetCollection);
+}
+domtools.DOMManipulation.beforeThisInsert = function(target,contentNode,contentQuery) {
+	if(contentNode != null) domtools.DOMManipulation.insertThisBefore(contentNode,target); else if(contentQuery != null) domtools.QueryDOMManipulation.insertThisBefore(contentQuery,target);
+	return target;
+}
+domtools.DOMManipulation.afterThisInsert = function(target,contentNode,contentQuery) {
+	if(contentNode != null) domtools.DOMManipulation.insertThisBefore(contentNode,target.nextSibling,null); else if(contentQuery != null) domtools.QueryDOMManipulation.insertThisBefore(contentQuery,target.nextSibling,domtools.QueryTraversing.next(null));
+	return target;
+}
+domtools.DOMManipulation.remove = function(childToRemove) {
+	childToRemove.parentNode.removeChild(childToRemove);
+	return childToRemove;
+}
+domtools.DOMManipulation.empty = function(container) {
+	while(container.hasChildNodes()) container.removeChild(container.firstChild);
+	return container;
+}
+domtools.DOMManipulation.prototype = {
+	__class__: domtools.DOMManipulation
+}
+domtools.QueryDOMManipulation = $hxClasses["domtools.QueryDOMManipulation"] = function() { }
+domtools.QueryDOMManipulation.__name__ = ["domtools","QueryDOMManipulation"];
+domtools.QueryDOMManipulation.append = function(parentCollection,childNode,childCollection) {
+	var firstChildUsed = false;
+	var $it0 = parentCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var parent = $it0.next();
+		childNode = firstChildUsed || childNode == null?childNode:childNode.cloneNode(true);
+		childCollection = firstChildUsed || childCollection == null?childCollection:childCollection.clone();
+		domtools.DOMManipulation.append(parent,childNode,childCollection);
+		firstChildUsed = true;
+	}
+	return parentCollection;
+}
+domtools.QueryDOMManipulation.prepend = function(parentCollection,childNode,childCollection) {
+	var firstChildUsed = false;
+	var $it0 = parentCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var parent = $it0.next();
+		childNode = firstChildUsed || childNode == null?childNode:childNode.cloneNode(true);
+		childCollection = firstChildUsed || childCollection == null?childCollection:childCollection.clone();
+		domtools.DOMManipulation.prepend(parent,childNode,childCollection);
+		firstChildUsed = true;
+	}
+	return parentCollection;
+}
+domtools.QueryDOMManipulation.appendTo = function(children,parentNode,parentCollection) {
+	if(parentNode != null) domtools.DOMManipulation.append(parentNode,null,children); else if(parentCollection != null) domtools.QueryDOMManipulation.append(parentCollection,null,children);
+	return children;
+}
+domtools.QueryDOMManipulation.prependTo = function(children,parentNode,parentCollection) {
+	return domtools.QueryDOMManipulation.insertThisBefore(children,parentNode.firstChild,domtools.QueryTraversing.firstChildren(parentCollection));
+}
+domtools.QueryDOMManipulation.insertThisBefore = function(content,targetNode,targetCollection) {
+	if(targetNode != null) {
+		var $it0 = content.collection.iterator();
+		while( $it0.hasNext() ) {
+			var childToAdd = $it0.next();
+			domtools.DOMManipulation.insertThisBefore(childToAdd,targetNode);
+		}
+	} else if(targetCollection != null) {
+		var firstChildUsed = false;
+		var childCollection = content;
+		var $it1 = targetCollection.collection.iterator();
+		while( $it1.hasNext() ) {
+			var target = $it1.next();
+			childCollection = firstChildUsed?childCollection:childCollection.clone();
+			domtools.QueryDOMManipulation.insertThisBefore(childCollection,target);
+			firstChildUsed = true;
+		}
+	}
+	return content;
+}
+domtools.QueryDOMManipulation.insertThisAfter = function(content,targetNode,targetCollection) {
+	return domtools.QueryDOMManipulation.insertThisBefore(content,targetNode.nextSibling,domtools.QueryTraversing.next(targetCollection));
+}
+domtools.QueryDOMManipulation.beforeThisInsert = function(target,contentNode,contentCollection) {
+	if(contentNode != null) domtools.DOMManipulation.insertThisBefore(contentNode,null,target); else if(contentCollection != null) domtools.QueryDOMManipulation.insertThisBefore(contentCollection,null,target);
+	return target;
+}
+domtools.QueryDOMManipulation.afterThisInsert = function(target,contentNode,contentCollection) {
+	if(contentNode != null) domtools.DOMManipulation.insertThisBefore(contentNode,null.nextSibling,target); else if(contentCollection != null) domtools.QueryDOMManipulation.insertThisBefore(contentCollection,null.nextSibling,domtools.QueryTraversing.next(target));
+	return target;
+}
+domtools.QueryDOMManipulation.remove = function(nodesToRemove) {
+	var $it0 = nodesToRemove.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.DOMManipulation.remove(node);
+	}
+	return nodesToRemove;
+}
+domtools.QueryDOMManipulation.empty = function(containers) {
+	var $it0 = containers.collection.iterator();
+	while( $it0.hasNext() ) {
+		var container = $it0.next();
+		while(container.hasChildNodes()) container.removeChild(container.firstChild);
+	}
+	return containers;
+}
+domtools.QueryDOMManipulation.prototype = {
+	__class__: domtools.QueryDOMManipulation
+}
+var Reflect = $hxClasses["Reflect"] = function() { }
 Reflect.__name__ = ["Reflect"];
 Reflect.hasField = function(o,field) {
 	if(o.hasOwnProperty != null) return o.hasOwnProperty(field);
@@ -131,6 +905,14 @@ Reflect.field = function(o,field) {
 }
 Reflect.setField = function(o,field,value) {
 	o[field] = value;
+}
+Reflect.getProperty = function(o,field) {
+	var tmp;
+	return o == null?null:o.__properties__ && (tmp = o.__properties__["get_" + field])?o[tmp]():o[field];
+}
+Reflect.setProperty = function(o,field,value) {
+	var tmp;
+	if(o.__properties__ && (tmp = o.__properties__["set_" + field])) o[tmp](value); else o[field] = value;
 }
 Reflect.callMethod = function(o,func,args) {
 	return func.apply(o,args);
@@ -195,959 +977,321 @@ Reflect.makeVarArgs = function(f) {
 		return f(a);
 	};
 }
-Reflect.prototype.__class__ = Reflect;
-if(typeof demo=='undefined') demo = {}
-demo.Main = function() { }
-demo.Main.__name__ = ["demo","Main"];
-demo.Main.main = function() {
-	var form = new autoform.AutoForm(demo.MySampleModel);
+Reflect.prototype = {
+	__class__: Reflect
 }
-demo.Main.prototype.__class__ = demo.Main;
-if(typeof haxe=='undefined') haxe = {}
-haxe.Log = function() { }
-haxe.Log.__name__ = ["haxe","Log"];
-haxe.Log.trace = function(v,infos) {
-	js.Boot.__trace(v,infos);
+autoform.AbstractRenderer = $hxClasses["autoform.AbstractRenderer"] = function(form) {
+	this.displays = new Hash();
+	this.form = form;
 }
-haxe.Log.clear = function() {
-	js.Boot.__clear_trace();
-}
-haxe.Log.prototype.__class__ = haxe.Log;
-sys.db.ResultSet = function() { }
-sys.db.ResultSet.__name__ = ["sys","db","ResultSet"];
-sys.db.ResultSet.prototype.length = null;
-sys.db.ResultSet.prototype.nfields = null;
-sys.db.ResultSet.prototype.hasNext = null;
-sys.db.ResultSet.prototype.next = null;
-sys.db.ResultSet.prototype.results = null;
-sys.db.ResultSet.prototype.getResult = null;
-sys.db.ResultSet.prototype.getIntResult = null;
-sys.db.ResultSet.prototype.getFloatResult = null;
-sys.db.ResultSet.prototype.getFieldsNames = null;
-sys.db.ResultSet.prototype.__class__ = sys.db.ResultSet;
-Hash = function(p) {
-	if( p === $_ ) return;
-	this.h = {}
-	if(this.h.__proto__ != null) {
-		this.h.__proto__ = null;
-		delete(this.h.__proto__);
-	}
-}
-Hash.__name__ = ["Hash"];
-Hash.prototype.h = null;
-Hash.prototype.set = function(key,value) {
-	this.h["$" + key] = value;
-}
-Hash.prototype.get = function(key) {
-	return this.h["$" + key];
-}
-Hash.prototype.exists = function(key) {
-	try {
-		key = "$" + key;
-		return this.hasOwnProperty.call(this.h,key);
-	} catch( e ) {
-		for(var i in this.h) if( i == key ) return true;
-		return false;
-	}
-}
-Hash.prototype.remove = function(key) {
-	if(!this.exists(key)) return false;
-	delete(this.h["$" + key]);
-	return true;
-}
-Hash.prototype.keys = function() {
-	var a = new Array();
-	for(var i in this.h) a.push(i.substr(1));
-	return a.iterator();
-}
-Hash.prototype.iterator = function() {
-	return { ref : this.h, it : this.keys(), hasNext : function() {
-		return this.it.hasNext();
-	}, next : function() {
-		var i = this.it.next();
-		return this.ref["$" + i];
-	}};
-}
-Hash.prototype.toString = function() {
-	var s = new StringBuf();
-	s.b[s.b.length] = "{";
-	var it = this.keys();
-	while( it.hasNext() ) {
-		var i = it.next();
-		s.b[s.b.length] = i == null?"null":i;
-		s.b[s.b.length] = " => ";
-		s.add(Std.string(this.get(i)));
-		if(it.hasNext()) s.b[s.b.length] = ", ";
-	}
-	s.b[s.b.length] = "}";
-	return s.b.join("");
-}
-Hash.prototype.__class__ = Hash;
-List = function(p) {
-	if( p === $_ ) return;
-	this.length = 0;
-}
-List.__name__ = ["List"];
-List.prototype.h = null;
-List.prototype.q = null;
-List.prototype.length = null;
-List.prototype.add = function(item) {
-	var x = [item];
-	if(this.h == null) this.h = x; else this.q[1] = x;
-	this.q = x;
-	this.length++;
-}
-List.prototype.push = function(item) {
-	var x = [item,this.h];
-	this.h = x;
-	if(this.q == null) this.q = x;
-	this.length++;
-}
-List.prototype.first = function() {
-	return this.h == null?null:this.h[0];
-}
-List.prototype.last = function() {
-	return this.q == null?null:this.q[0];
-}
-List.prototype.pop = function() {
-	if(this.h == null) return null;
-	var x = this.h[0];
-	this.h = this.h[1];
-	if(this.h == null) this.q = null;
-	this.length--;
-	return x;
-}
-List.prototype.isEmpty = function() {
-	return this.h == null;
-}
-List.prototype.clear = function() {
-	this.h = null;
-	this.q = null;
-	this.length = 0;
-}
-List.prototype.remove = function(v) {
-	var prev = null;
-	var l = this.h;
-	while(l != null) {
-		if(l[0] == v) {
-			if(prev == null) this.h = l[1]; else prev[1] = l[1];
-			if(this.q == l) this.q = prev;
-			this.length--;
-			return true;
+autoform.AbstractRenderer.__name__ = ["autoform","AbstractRenderer"];
+autoform.AbstractRenderer.guessDisplay = function(field) {
+	var display;
+	if(field.display != "") display = field.display; else display = (function($this) {
+		var $r;
+		switch(field.type) {
+		case "String":
+			$r = "text";
+			break;
+		case "Int":
+			$r = "number/int";
+			break;
+		case "Float":
+			$r = "number/float";
+			break;
+		case "Date":
+			$r = "date";
+			break;
+		case "Bool":
+			$r = "checkbox";
+			break;
+		case "Array<Bool>":
+			$r = "checkbox";
+			break;
+		default:
+			$r = "text";
 		}
-		prev = l;
-		l = l[1];
+		return $r;
+	}(this));
+	return display;
+}
+autoform.AbstractRenderer.prototype = {
+	form: null
+	,displays: null
+	,run: function(fields) {
 	}
-	return false;
+	,__class__: autoform.AbstractRenderer
 }
-List.prototype.iterator = function() {
-	return { h : this.h, hasNext : function() {
-		return this.h != null;
-	}, next : function() {
-		if(this.h == null) return null;
-		var x = this.h[0];
-		this.h = this.h[1];
-		return x;
-	}};
-}
-List.prototype.toString = function() {
-	var s = new StringBuf();
-	var first = true;
-	var l = this.h;
-	s.b[s.b.length] = "{";
-	while(l != null) {
-		if(first) first = false; else s.b[s.b.length] = ", ";
-		s.add(Std.string(l[0]));
-		l = l[1];
-	}
-	s.b[s.b.length] = "}";
-	return s.b.join("");
-}
-List.prototype.join = function(sep) {
-	var s = new StringBuf();
-	var first = true;
-	var l = this.h;
-	while(l != null) {
-		if(first) first = false; else s.b[s.b.length] = sep == null?"null":sep;
-		s.add(l[0]);
-		l = l[1];
-	}
-	return s.b.join("");
-}
-List.prototype.filter = function(f) {
-	var l2 = new List();
-	var l = this.h;
-	while(l != null) {
-		var v = l[0];
-		l = l[1];
-		if(f(v)) l2.add(v);
-	}
-	return l2;
-}
-List.prototype.map = function(f) {
-	var b = new List();
-	var l = this.h;
-	while(l != null) {
-		var v = l[0];
-		l = l[1];
-		b.add(f(v));
-	}
-	return b;
-}
-List.prototype.__class__ = List;
-sys.db.Manager = function(classval) {
-	if( classval === $_ ) return;
-	var m = haxe.rtti.Meta.getType(classval).rtti;
-	if(m == null) throw "Missing @rtti for class " + Type.getClassName(classval);
-	this.table_infos = haxe.Unserializer.run(m[0]);
-	this.table_name = this.quoteField(this.table_infos.name);
-	this.table_keys = this.table_infos.key;
-	this.table_fields = new List();
-	var _g = 0, _g1 = this.table_infos.fields;
-	while(_g < _g1.length) {
-		var f = _g1[_g];
-		++_g;
-		this.table_fields.add(f.name);
-	}
-	this.class_proto = classval;
-}
-sys.db.Manager.__name__ = ["sys","db","Manager"];
-sys.db.Manager.cnx = null;
-sys.db.Manager.lockMode = null;
-sys.db.Manager.setConnection = function(c) {
-	sys.db.Manager.cnx = c;
-	sys.db.Manager.lockMode = c != null && c.dbName() == "MySQL"?" FOR UPDATE":"";
-	return c;
-}
-sys.db.Manager.initialize = function() {
-	var l = sys.db.Manager.init_list;
-	sys.db.Manager.init_list = new List();
-	var $it0 = l.iterator();
-	while( $it0.hasNext() ) {
-		var m = $it0.next();
-		var _g = 0, _g1 = m.table_infos.relations;
-		while(_g < _g1.length) {
-			var r = _g1[_g];
-			++_g;
-			m.initRelation(r);
-		}
-	}
-}
-sys.db.Manager.cleanup = function() {
-	sys.db.Manager.object_cache = new Hash();
-}
-sys.db.Manager.quoteAny = function(v) {
-	var s = new StringBuf();
-	sys.db.Manager.cnx.addValue(s,v);
-	return s.b.join("");
-}
-sys.db.Manager.quoteList = function(v,it) {
-	var b = new StringBuf();
-	var first = true;
-	if(it != null) {
-		var $it0 = it.iterator();
-		while( $it0.hasNext() ) {
-			var v1 = $it0.next();
-			if(first) first = false; else b.b[b.b.length] = String.fromCharCode(44);
-			sys.db.Manager.cnx.addValue(b,v1);
-		}
-	}
-	if(first) return "FALSE";
-	return v + " IN (" + b.b.join("") + ")";
-}
-sys.db.Manager.prototype.table_infos = null;
-sys.db.Manager.prototype.table_name = null;
-sys.db.Manager.prototype.table_fields = null;
-sys.db.Manager.prototype.table_keys = null;
-sys.db.Manager.prototype.class_proto = null;
-sys.db.Manager.prototype.all = function(lock) {
-	return this.unsafeObjects("SELECT * FROM " + this.table_name,lock);
-}
-sys.db.Manager.prototype.get = null;
-sys.db.Manager.prototype.select = null;
-sys.db.Manager.prototype.search = null;
-sys.db.Manager.prototype.count = null;
-sys.db.Manager.prototype["delete"] = null;
-sys.db.Manager.prototype.dynamicSearch = function(x,lock) {
-	var s = new StringBuf();
-	s.b[s.b.length] = "SELECT * FROM ";
-	s.add(this.table_name);
-	s.b[s.b.length] = " WHERE ";
-	this.addCondition(s,x);
-	return this.unsafeObjects(s.b.join(""),lock);
-}
-sys.db.Manager.prototype.quote = function(s) {
-	return this.getCnx().quote(s);
-}
-sys.db.Manager.prototype.doInsert = function(x) {
-	this.unmake(x);
-	var s = new StringBuf();
-	var fields = new List();
-	var values = new List();
-	var pos = 0;
-	var $it0 = this.table_fields.iterator();
-	while( $it0.hasNext() ) {
-		var f = $it0.next();
-		var v = Reflect.field(x,f);
-		if(v != null) {
-			fields.add(this.quoteField(f));
-			values.add(v);
-		} else {
-			var inf = this.table_infos.fields[pos];
-			if(!inf.isNull) {
-				switch( (inf.t)[1] ) {
-				case 3:
-				case 24:
-				case 1:
-				case 6:
-				case 7:
-				case 23:
-				case 5:
-					x[f] = 0;
-					break;
-				case 8:
-					x[f] = false;
-					break;
-				case 13:
-				case 15:
-				case 9:
-				case 14:
-				case 21:
-					x[f] = "";
-					break;
-				case 16:
-				case 22:
-				case 17:
-				case 19:
-				case 18:
-					x[f] = haxe.io.Bytes.alloc(0);
-					break;
-				case 10:
-				case 11:
-				case 12:
-					break;
-				case 0:
-				case 2:
-				case 4:
-				case 26:
-				case 25:
-				case 20:
-					break;
-				}
-			}
-		}
-		pos++;
-	}
-	s.b[s.b.length] = "INSERT INTO ";
-	s.add(this.table_name);
-	s.b[s.b.length] = " (";
-	s.add(fields.join(","));
-	s.b[s.b.length] = ") VALUES (";
-	var first = true;
-	var $it1 = values.iterator();
-	while( $it1.hasNext() ) {
-		var v = $it1.next();
-		if(first) first = false; else s.b[s.b.length] = ", ";
-		this.getCnx().addValue(s,v);
-	}
-	s.b[s.b.length] = ")";
-	this.unsafeExecute(s.b.join(""));
-	x._lock = true;
-	if(this.table_keys.length == 1 && Reflect.field(x,this.table_keys[0]) == null) x[this.table_keys[0]] = this.getCnx().lastInsertId();
-	this.addToCache(x);
-}
-sys.db.Manager.prototype.doUpdate = function(x) {
-	if(!x._lock) throw "Cannot update a not locked object";
-	this.unmake(x);
-	var s = new StringBuf();
-	s.b[s.b.length] = "UPDATE ";
-	s.add(this.table_name);
-	s.b[s.b.length] = " SET ";
-	var cache = Reflect.field(x,"__cache__");
-	var mod = false;
-	var $it0 = this.table_fields.iterator();
-	while( $it0.hasNext() ) {
-		var f = $it0.next();
-		var v = Reflect.field(x,f);
-		var vc = Reflect.field(cache,f);
-		if(v != vc) {
-			if(mod) s.b[s.b.length] = ", "; else mod = true;
-			s.add(this.quoteField(f));
-			s.b[s.b.length] = " = ";
-			this.getCnx().addValue(s,v);
-			cache[f] = v;
-		}
-	}
-	if(!mod) return;
-	s.b[s.b.length] = " WHERE ";
-	this.addKeys(s,x);
-	this.unsafeExecute(s.b.join(""));
-}
-sys.db.Manager.prototype.doDelete = function(x) {
-	var s = new StringBuf();
-	s.b[s.b.length] = "DELETE FROM ";
-	s.add(this.table_name);
-	s.b[s.b.length] = " WHERE ";
-	this.addKeys(s,x);
-	this.unsafeExecute(s.b.join(""));
-	this.removeFromCache(x);
-}
-sys.db.Manager.prototype.doLock = function(i) {
-	if(i._lock) return;
-	var s = new StringBuf();
-	s.b[s.b.length] = "SELECT * FROM ";
-	s.add(this.table_name);
-	s.b[s.b.length] = " WHERE ";
-	this.addKeys(s,i);
-	this.unsafeObject(s.b.join(""),true);
-}
-sys.db.Manager.prototype.objectToString = function(it) {
-	var s = new StringBuf();
-	s.add(this.table_name);
-	if(this.table_keys.length == 1) {
-		s.b[s.b.length] = "#";
-		s.add(Reflect.field(it,this.table_keys[0]));
-	} else {
-		s.b[s.b.length] = "(";
-		var first = true;
-		var _g = 0, _g1 = this.table_keys;
-		while(_g < _g1.length) {
-			var f = _g1[_g];
-			++_g;
-			if(first) first = false; else s.b[s.b.length] = ",";
-			s.add(this.quoteField(f));
-			s.b[s.b.length] = ":";
-			s.add(Reflect.field(it,f));
-		}
-		s.b[s.b.length] = ")";
-	}
-	return s.b.join("");
-}
-sys.db.Manager.prototype.cacheObject = function(x,lock) {
-	var o = Type.createEmptyInstance(this.class_proto);
-	var _g = 0, _g1 = Reflect.fields(x);
-	while(_g < _g1.length) {
-		var f = _g1[_g];
-		++_g;
-		o[f] = Reflect.field(x,f);
-	}
-	o._manager = this;
-	o["__cache__"] = x;
-	this.addToCache(o);
-	o._lock = lock;
-	return o;
-}
-sys.db.Manager.prototype.make = function(x) {
-}
-sys.db.Manager.prototype.unmake = function(x) {
-}
-sys.db.Manager.prototype.quoteField = function(f) {
-	return sys.db.Manager.KEYWORDS.exists(f.toLowerCase())?"`" + f + "`":f;
-}
-sys.db.Manager.prototype.addKeys = function(s,x) {
-	var first = true;
-	var _g = 0, _g1 = this.table_keys;
-	while(_g < _g1.length) {
-		var k = _g1[_g];
-		++_g;
-		if(first) first = false; else s.b[s.b.length] = " AND ";
-		s.add(this.quoteField(k));
-		s.b[s.b.length] = " = ";
-		var f = Reflect.field(x,k);
-		if(f == null) throw "Missing key " + k;
-		this.getCnx().addValue(s,f);
-	}
-}
-sys.db.Manager.prototype.unsafeExecute = function(sql) {
-	return this.getCnx().request(sql);
-}
-sys.db.Manager.prototype.unsafeObject = function(sql,lock) {
-	if(lock != false) {
-		lock = true;
-		sql += this.getLockMode();
-	}
-	var r = this.unsafeExecute(sql).next();
-	if(r == null) return null;
-	var c = this.getFromCache(r,lock);
-	if(c != null) return c;
-	r = this.cacheObject(r,lock);
-	this.make(r);
-	return r;
-}
-sys.db.Manager.prototype.unsafeObjects = function(sql,lock) {
-	if(lock != false) {
-		lock = true;
-		sql += this.getLockMode();
-	}
-	var l = this.unsafeExecute(sql).results();
-	var l2 = new List();
-	var $it0 = l.iterator();
-	while( $it0.hasNext() ) {
-		var x = $it0.next();
-		var c = this.getFromCache(x,lock);
-		if(c != null) l2.add(c); else {
-			x = this.cacheObject(x,lock);
-			this.make(x);
-			l2.add(x);
-		}
-	}
-	return l2;
-}
-sys.db.Manager.prototype.unsafeCount = function(sql) {
-	return this.unsafeExecute(sql).getIntResult(0);
-}
-sys.db.Manager.prototype.unsafeDelete = function(sql) {
-	this.unsafeExecute(sql);
-}
-sys.db.Manager.prototype.unsafeGet = function(id,lock) {
-	if(lock == null) lock = true;
-	if(this.table_keys.length != 1) throw "Invalid number of keys";
-	if(id == null) return null;
-	var x = this.getFromCacheKey(Std.string(id) + this.table_name);
-	if(x != null && (!lock || x._lock)) return x;
-	var s = new StringBuf();
-	s.b[s.b.length] = "SELECT * FROM ";
-	s.add(this.table_name);
-	s.b[s.b.length] = " WHERE ";
-	s.add(this.quoteField(this.table_keys[0]));
-	s.b[s.b.length] = " = ";
-	this.getCnx().addValue(s,id);
-	return this.unsafeObject(s.b.join(""),lock);
-}
-sys.db.Manager.prototype.unsafeGetWithKeys = function(keys,lock) {
-	if(lock == null) lock = true;
-	var x = this.getFromCacheKey(this.makeCacheKey(keys));
-	if(x != null && (!lock || x._lock)) return x;
-	var s = new StringBuf();
-	s.b[s.b.length] = "SELECT * FROM ";
-	s.add(this.table_name);
-	s.b[s.b.length] = " WHERE ";
-	this.addKeys(s,keys);
-	return this.unsafeObject(s.b.join(""),lock);
-}
-sys.db.Manager.prototype.unsafeGetId = function(o) {
-	return o == null?null:Reflect.field(o,this.table_keys[0]);
-}
-sys.db.Manager.prototype.addCondition = function(s,x) {
-	var first = true;
-	if(x != null) {
-		var _g = 0, _g1 = Reflect.fields(x);
-		while(_g < _g1.length) {
-			var f = _g1[_g];
-			++_g;
-			if(first) first = false; else s.b[s.b.length] = " AND ";
-			s.add(this.quoteField(f));
-			var d = Reflect.field(x,f);
-			if(d == null) s.b[s.b.length] = " IS NULL"; else {
-				s.b[s.b.length] = " = ";
-				this.getCnx().addValue(s,d);
-			}
-		}
-	}
-	if(first) s.b[s.b.length] = "1";
-}
-sys.db.Manager.prototype.dbClass = function() {
-	return this.class_proto;
-}
-sys.db.Manager.prototype.dbInfos = function() {
-	return this.table_infos;
-}
-sys.db.Manager.prototype.getCnx = function() {
-	return sys.db.Manager.cnx;
-}
-sys.db.Manager.prototype.getLockMode = function() {
-	return sys.db.Manager.lockMode;
-}
-sys.db.Manager.prototype.initRelation = function(r) {
-	var spod = Type.resolveClass(r.type);
-	if(spod == null) throw "Missing spod type " + r.type;
-	var manager = spod.manager;
-	var hprop = "__" + r.prop;
-	var hkey = r.key;
-	var lock = r.lock;
-	if(manager == null || manager.table_keys == null) throw "Invalid manager for relation " + this.table_name + ":" + r.prop;
-	if(manager.table_keys.length != 1) throw "Relation " + r.prop + "(" + r.key + ") on a multiple key table";
-	this.class_proto.prototype["get_" + r.prop] = function() {
-		var othis = this;
-		var f = Reflect.field(othis,hprop);
-		if(f != null) return f;
-		var id = Reflect.field(othis,hkey);
-		if(id == null) return null;
-		f = manager.unsafeGet(id,lock);
-		if(f == null && id != null && !lock) f = manager.unsafeGet(id,true);
-		othis[hprop] = f;
-		return f;
-	};
-	this.class_proto.prototype["set_" + r.prop] = function(f) {
-		var othis = this;
-		othis[hprop] = f;
-		othis[hkey] = Reflect.field(f,manager.table_keys[0]);
-		return f;
-	};
-}
-sys.db.Manager.prototype.__get = function(x,prop,key,lock) {
-	var v = Reflect.field(x,prop);
-	if(v != null) return v.value;
-	var x1 = this.unsafeGet(Reflect.field(x,key),lock);
-	x1[prop] = { value : x1};
-	return x1;
-}
-sys.db.Manager.prototype.__set = function(x,prop,key,v) {
-	x[prop] = { value : v};
-	if(v == null) x[key] = null; else x[key] = Reflect.field(v,this.table_keys[0]);
-}
-sys.db.Manager.prototype.makeCacheKey = function(x) {
-	if(this.table_keys.length == 1) {
-		var k = Reflect.field(x,this.table_keys[0]);
-		if(k == null) throw "Missing key " + this.table_keys[0];
-		return Std.string(k) + this.table_name;
-	}
-	var s = new StringBuf();
-	var _g = 0, _g1 = this.table_keys;
-	while(_g < _g1.length) {
-		var k = _g1[_g];
-		++_g;
-		var v = Reflect.field(x,k);
-		if(k == null) throw "Missing key " + k;
-		s.b[s.b.length] = v == null?"null":v;
-		s.b[s.b.length] = "#";
-	}
-	s.add(this.table_name);
-	return s.b.join("");
-}
-sys.db.Manager.prototype.addToCache = function(x) {
-	sys.db.Manager.object_cache.set(this.makeCacheKey(x),x);
-}
-sys.db.Manager.prototype.removeFromCache = function(x) {
-	sys.db.Manager.object_cache.remove(this.makeCacheKey(x));
-}
-sys.db.Manager.prototype.getFromCacheKey = function(key) {
-	return sys.db.Manager.object_cache.get(key);
-}
-sys.db.Manager.prototype.getFromCache = function(x,lock) {
-	var c = sys.db.Manager.object_cache.get(this.makeCacheKey(x));
-	if(c != null && lock && !c._lock) {
-		var _g = 0, _g1 = Reflect.fields(c);
-		while(_g < _g1.length) {
-			var f = _g1[_g];
-			++_g;
-			Reflect.deleteField(c,f);
-		}
-		var _g = 0, _g1 = Reflect.fields(x);
-		while(_g < _g1.length) {
-			var f = _g1[_g];
-			++_g;
-			c[f] = Reflect.field(x,f);
-		}
-		c._lock = true;
-		c["__cache__"] = x;
-		this.make(c);
-	}
-	return c;
-}
-sys.db.Manager.prototype.__class__ = sys.db.Manager;
-StringBuf = function(p) {
-	if( p === $_ ) return;
-	this.b = new Array();
-}
-StringBuf.__name__ = ["StringBuf"];
-StringBuf.prototype.add = function(x) {
-	this.b[this.b.length] = x == null?"null":x;
-}
-StringBuf.prototype.addSub = function(s,pos,len) {
-	this.b[this.b.length] = s.substr(pos,len);
-}
-StringBuf.prototype.addChar = function(c) {
-	this.b[this.b.length] = String.fromCharCode(c);
-}
-StringBuf.prototype.toString = function() {
-	return this.b.join("");
-}
-StringBuf.prototype.b = null;
-StringBuf.prototype.__class__ = StringBuf;
-sys.db.SpodType = { __ename__ : ["sys","db","SpodType"], __constructs__ : ["DId","DInt","DUId","DUInt","DBigId","DBigInt","DSingle","DFloat","DBool","DString","DDate","DDateTime","DTimeStamp","DTinyText","DSmallText","DText","DSmallBinary","DLongBinary","DBinary","DBytes","DEncoded","DSerialized","DNekoSerialized","DFlags","DTinyInt","DInterval","DNull"] }
-sys.db.SpodType.DId = ["DId",0];
-sys.db.SpodType.DId.toString = $estr;
-sys.db.SpodType.DId.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DInt = ["DInt",1];
-sys.db.SpodType.DInt.toString = $estr;
-sys.db.SpodType.DInt.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DUId = ["DUId",2];
-sys.db.SpodType.DUId.toString = $estr;
-sys.db.SpodType.DUId.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DUInt = ["DUInt",3];
-sys.db.SpodType.DUInt.toString = $estr;
-sys.db.SpodType.DUInt.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DBigId = ["DBigId",4];
-sys.db.SpodType.DBigId.toString = $estr;
-sys.db.SpodType.DBigId.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DBigInt = ["DBigInt",5];
-sys.db.SpodType.DBigInt.toString = $estr;
-sys.db.SpodType.DBigInt.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DSingle = ["DSingle",6];
-sys.db.SpodType.DSingle.toString = $estr;
-sys.db.SpodType.DSingle.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DFloat = ["DFloat",7];
-sys.db.SpodType.DFloat.toString = $estr;
-sys.db.SpodType.DFloat.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DBool = ["DBool",8];
-sys.db.SpodType.DBool.toString = $estr;
-sys.db.SpodType.DBool.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DString = function(n) { var $x = ["DString",9,n]; $x.__enum__ = sys.db.SpodType; $x.toString = $estr; return $x; }
-sys.db.SpodType.DDate = ["DDate",10];
-sys.db.SpodType.DDate.toString = $estr;
-sys.db.SpodType.DDate.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DDateTime = ["DDateTime",11];
-sys.db.SpodType.DDateTime.toString = $estr;
-sys.db.SpodType.DDateTime.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DTimeStamp = ["DTimeStamp",12];
-sys.db.SpodType.DTimeStamp.toString = $estr;
-sys.db.SpodType.DTimeStamp.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DTinyText = ["DTinyText",13];
-sys.db.SpodType.DTinyText.toString = $estr;
-sys.db.SpodType.DTinyText.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DSmallText = ["DSmallText",14];
-sys.db.SpodType.DSmallText.toString = $estr;
-sys.db.SpodType.DSmallText.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DText = ["DText",15];
-sys.db.SpodType.DText.toString = $estr;
-sys.db.SpodType.DText.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DSmallBinary = ["DSmallBinary",16];
-sys.db.SpodType.DSmallBinary.toString = $estr;
-sys.db.SpodType.DSmallBinary.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DLongBinary = ["DLongBinary",17];
-sys.db.SpodType.DLongBinary.toString = $estr;
-sys.db.SpodType.DLongBinary.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DBinary = ["DBinary",18];
-sys.db.SpodType.DBinary.toString = $estr;
-sys.db.SpodType.DBinary.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DBytes = function(n) { var $x = ["DBytes",19,n]; $x.__enum__ = sys.db.SpodType; $x.toString = $estr; return $x; }
-sys.db.SpodType.DEncoded = ["DEncoded",20];
-sys.db.SpodType.DEncoded.toString = $estr;
-sys.db.SpodType.DEncoded.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DSerialized = ["DSerialized",21];
-sys.db.SpodType.DSerialized.toString = $estr;
-sys.db.SpodType.DSerialized.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DNekoSerialized = ["DNekoSerialized",22];
-sys.db.SpodType.DNekoSerialized.toString = $estr;
-sys.db.SpodType.DNekoSerialized.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DFlags = function(flags) { var $x = ["DFlags",23,flags]; $x.__enum__ = sys.db.SpodType; $x.toString = $estr; return $x; }
-sys.db.SpodType.DTinyInt = ["DTinyInt",24];
-sys.db.SpodType.DTinyInt.toString = $estr;
-sys.db.SpodType.DTinyInt.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DInterval = ["DInterval",25];
-sys.db.SpodType.DInterval.toString = $estr;
-sys.db.SpodType.DInterval.__enum__ = sys.db.SpodType;
-sys.db.SpodType.DNull = ["DNull",26];
-sys.db.SpodType.DNull.toString = $estr;
-sys.db.SpodType.DNull.__enum__ = sys.db.SpodType;
-demo.MySampleModel = function(p) {
-	if( p === $_ ) return;
-	sys.db.Object.call(this);
-}
-demo.MySampleModel.__name__ = ["demo","MySampleModel"];
-demo.MySampleModel.__super__ = sys.db.Object;
-for(var k in sys.db.Object.prototype ) demo.MySampleModel.prototype[k] = sys.db.Object.prototype[k];
-demo.MySampleModel.prototype.id = null;
-demo.MySampleModel.prototype.name = null;
-demo.MySampleModel.prototype.email = null;
-demo.MySampleModel.prototype.birthday = null;
-demo.MySampleModel.prototype.__class__ = demo.MySampleModel;
-if(!haxe.io) haxe.io = {}
-haxe.io.Bytes = function(length,b) {
-	if( length === $_ ) return;
-	this.length = length;
-	this.b = b;
-}
-haxe.io.Bytes.__name__ = ["haxe","io","Bytes"];
-haxe.io.Bytes.alloc = function(length) {
-	var a = new Array();
-	var _g = 0;
-	while(_g < length) {
-		var i = _g++;
-		a.push(0);
-	}
-	return new haxe.io.Bytes(length,a);
-}
-haxe.io.Bytes.ofString = function(s) {
-	var a = new Array();
-	var _g1 = 0, _g = s.length;
-	while(_g1 < _g) {
-		var i = _g1++;
-		var c = s.cca(i);
-		if(c <= 127) a.push(c); else if(c <= 2047) {
-			a.push(192 | c >> 6);
-			a.push(128 | c & 63);
-		} else if(c <= 65535) {
-			a.push(224 | c >> 12);
-			a.push(128 | c >> 6 & 63);
-			a.push(128 | c & 63);
-		} else {
-			a.push(240 | c >> 18);
-			a.push(128 | c >> 12 & 63);
-			a.push(128 | c >> 6 & 63);
-			a.push(128 | c & 63);
-		}
-	}
-	return new haxe.io.Bytes(a.length,a);
-}
-haxe.io.Bytes.ofData = function(b) {
-	return new haxe.io.Bytes(b.length,b);
-}
-haxe.io.Bytes.prototype.length = null;
-haxe.io.Bytes.prototype.b = null;
-haxe.io.Bytes.prototype.get = function(pos) {
-	return this.b[pos];
-}
-haxe.io.Bytes.prototype.set = function(pos,v) {
-	this.b[pos] = v & 255;
-}
-haxe.io.Bytes.prototype.blit = function(pos,src,srcpos,len) {
-	if(pos < 0 || srcpos < 0 || len < 0 || pos + len > this.length || srcpos + len > src.length) throw haxe.io.Error.OutsideBounds;
-	var b1 = this.b;
-	var b2 = src.b;
-	if(b1 == b2 && pos > srcpos) {
-		var i = len;
-		while(i > 0) {
-			i--;
-			b1[i + pos] = b2[i + srcpos];
-		}
-		return;
-	}
-	var _g = 0;
-	while(_g < len) {
-		var i = _g++;
-		b1[i + pos] = b2[i + srcpos];
-	}
-}
-haxe.io.Bytes.prototype.sub = function(pos,len) {
-	if(pos < 0 || len < 0 || pos + len > this.length) throw haxe.io.Error.OutsideBounds;
-	return new haxe.io.Bytes(len,this.b.slice(pos,pos + len));
-}
-haxe.io.Bytes.prototype.compare = function(other) {
-	var b1 = this.b;
-	var b2 = other.b;
-	var len = this.length < other.length?this.length:other.length;
-	var _g = 0;
-	while(_g < len) {
-		var i = _g++;
-		if(b1[i] != b2[i]) return b1[i] - b2[i];
-	}
-	return this.length - other.length;
-}
-haxe.io.Bytes.prototype.readString = function(pos,len) {
-	if(pos < 0 || len < 0 || pos + len > this.length) throw haxe.io.Error.OutsideBounds;
-	var s = "";
-	var b = this.b;
-	var fcc = String.fromCharCode;
-	var i = pos;
-	var max = pos + len;
-	while(i < max) {
-		var c = b[i++];
-		if(c < 128) {
-			if(c == 0) break;
-			s += fcc(c);
-		} else if(c < 224) s += fcc((c & 63) << 6 | b[i++] & 127); else if(c < 240) {
-			var c2 = b[i++];
-			s += fcc((c & 31) << 12 | (c2 & 127) << 6 | b[i++] & 127);
-		} else {
-			var c2 = b[i++];
-			var c3 = b[i++];
-			s += fcc((c & 15) << 18 | (c2 & 127) << 12 | c3 << 6 & 127 | b[i++] & 127);
-		}
-	}
-	return s;
-}
-haxe.io.Bytes.prototype.toString = function() {
-	return this.readString(0,this.length);
-}
-haxe.io.Bytes.prototype.toHex = function() {
-	var s = new StringBuf();
-	var chars = [];
-	var str = "0123456789abcdef";
-	var _g1 = 0, _g = str.length;
-	while(_g1 < _g) {
-		var i = _g1++;
-		chars.push(str.charCodeAt(i));
-	}
-	var _g1 = 0, _g = this.length;
-	while(_g1 < _g) {
-		var i = _g1++;
-		var c = this.b[i];
-		s.b[s.b.length] = String.fromCharCode(chars[c >> 4]);
-		s.b[s.b.length] = String.fromCharCode(chars[c & 15]);
-	}
-	return s.b.join("");
-}
-haxe.io.Bytes.prototype.getData = function() {
-	return this.b;
-}
-haxe.io.Bytes.prototype.__class__ = haxe.io.Bytes;
-IntIter = function(min,max) {
-	if( min === $_ ) return;
+var IntIter = $hxClasses["IntIter"] = function(min,max) {
 	this.min = min;
 	this.max = max;
 }
 IntIter.__name__ = ["IntIter"];
-IntIter.prototype.min = null;
-IntIter.prototype.max = null;
-IntIter.prototype.hasNext = function() {
-	return this.min < this.max;
+IntIter.prototype = {
+	min: null
+	,max: null
+	,hasNext: function() {
+		return this.min < this.max;
+	}
+	,next: function() {
+		return this.min++;
+	}
+	,__class__: IntIter
 }
-IntIter.prototype.next = function() {
-	return this.min++;
+domtools.Traversing = $hxClasses["domtools.Traversing"] = function() { }
+domtools.Traversing.__name__ = ["domtools","Traversing"];
+domtools.Traversing.children = function(node,elementsOnly) {
+	if(elementsOnly == null) elementsOnly = true;
+	var children = new domtools.Query();
+	if(domtools.ElementManipulation.isElement(node)) children.addNodeList(node.childNodes,elementsOnly);
+	return children;
 }
-IntIter.prototype.__class__ = IntIter;
-sys.db.Connection = function() { }
-sys.db.Connection.__name__ = ["sys","db","Connection"];
-sys.db.Connection.prototype.request = null;
-sys.db.Connection.prototype.close = null;
-sys.db.Connection.prototype.escape = null;
-sys.db.Connection.prototype.quote = null;
-sys.db.Connection.prototype.addValue = null;
-sys.db.Connection.prototype.lastInsertId = null;
-sys.db.Connection.prototype.dbName = null;
-sys.db.Connection.prototype.startTransaction = null;
-sys.db.Connection.prototype.commit = null;
-sys.db.Connection.prototype.rollback = null;
-sys.db.Connection.prototype.__class__ = sys.db.Connection;
-haxe.io.Error = { __ename__ : ["haxe","io","Error"], __constructs__ : ["Blocked","Overflow","OutsideBounds","Custom"] }
-haxe.io.Error.Blocked = ["Blocked",0];
-haxe.io.Error.Blocked.toString = $estr;
-haxe.io.Error.Blocked.__enum__ = haxe.io.Error;
-haxe.io.Error.Overflow = ["Overflow",1];
-haxe.io.Error.Overflow.toString = $estr;
-haxe.io.Error.Overflow.__enum__ = haxe.io.Error;
-haxe.io.Error.OutsideBounds = ["OutsideBounds",2];
-haxe.io.Error.OutsideBounds.toString = $estr;
-haxe.io.Error.OutsideBounds.__enum__ = haxe.io.Error;
-haxe.io.Error.Custom = function(e) { var $x = ["Custom",3,e]; $x.__enum__ = haxe.io.Error; $x.toString = $estr; return $x; }
-Std = function() { }
-Std.__name__ = ["Std"];
-Std["is"] = function(v,t) {
-	return js.Boot.__instanceof(v,t);
+domtools.Traversing.firstChildren = function(node,elementsOnly) {
+	if(elementsOnly == null) elementsOnly = true;
+	var firstChild = null;
+	if(domtools.ElementManipulation.isElement(node)) {
+		var e = node.firstChild;
+		while(elementsOnly == true && e != null && domtools.ElementManipulation.isElement(e) == false) e = e.nextSibling;
+		if(e != null) firstChild = e;
+	}
+	return firstChild;
 }
-Std.string = function(s) {
-	return js.Boot.__string_rec(s,"");
+domtools.Traversing.lastChildren = function(node,elementsOnly) {
+	if(elementsOnly == null) elementsOnly = true;
+	var lastChild = null;
+	if(domtools.ElementManipulation.isElement(node)) {
+		var e = node.lastChild;
+		while(elementsOnly == true && e != null && domtools.ElementManipulation.isElement(e) == false) e = e.previousSibling;
+		if(e != null) lastChild = e;
+	}
+	return lastChild;
 }
-Std["int"] = function(x) {
-	if(x < 0) return Math.ceil(x);
-	return Math.floor(x);
+domtools.Traversing.parent = function(node) {
+	return node.parentNode != null?node.parentNode:null;
 }
-Std.parseInt = function(x) {
-	var v = parseInt(x,10);
-	if(v == 0 && x.charCodeAt(1) == 120) v = parseInt(x);
-	if(isNaN(v)) return null;
-	return v;
+domtools.Traversing.ancestors = function(node) {
+	var ancestors = new domtools.Query();
+	{
+		ancestors.collection.push(domtools.Traversing.parent(node));
+		ancestors;
+	}
+	if(ancestors.collection.length > 0) ancestors.addCollection(domtools.QueryTraversing.parent(ancestors));
+	return ancestors;
 }
-Std.parseFloat = function(x) {
-	return parseFloat(x);
+domtools.Traversing.next = function(node) {
+	return node.nextSibling != null?node.nextSibling:null;
 }
-Std.random = function(x) {
-	return Math.floor(Math.random() * x);
+domtools.Traversing.prev = function(node) {
+	return node.previousSibling != null?node.previousSibling:null;
 }
-Std.prototype.__class__ = Std;
-Type = function() { }
+domtools.Traversing.find = function(node,selector) {
+	var newQuery = new domtools.Query();
+	if(domtools.ElementManipulation.isElement(node)) {
+		var element = node;
+		newQuery.addNodeList(element.querySelectorAll(selector));
+	}
+	return newQuery;
+}
+domtools.Traversing.prototype = {
+	__class__: domtools.Traversing
+}
+domtools.QueryTraversing = $hxClasses["domtools.QueryTraversing"] = function() { }
+domtools.QueryTraversing.__name__ = ["domtools","QueryTraversing"];
+domtools.QueryTraversing.children = function(query,elementsOnly) {
+	if(elementsOnly == null) elementsOnly = true;
+	var children = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		if(domtools.ElementManipulation.isElement(node)) children.addNodeList(node.childNodes,elementsOnly);
+	}
+	return children;
+}
+domtools.QueryTraversing.firstChildren = function(query,elementsOnly) {
+	if(elementsOnly == null) elementsOnly = true;
+	var children = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		if(domtools.ElementManipulation.isElement(node)) {
+			var e = node.firstChild;
+			while(elementsOnly == true && e != null && domtools.ElementManipulation.isElement(e) == false) e = e.nextSibling;
+			if(e != null) {
+				children.collection.push(e);
+				children;
+			}
+		}
+	}
+	return children;
+}
+domtools.QueryTraversing.lastChildren = function(query,elementsOnly) {
+	if(elementsOnly == null) elementsOnly = true;
+	var children = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		if(domtools.ElementManipulation.isElement(node)) {
+			var e = node.lastChild;
+			while(elementsOnly == true && e != null && domtools.ElementManipulation.isElement(e) == false) e = e.previousSibling;
+			if(e != null) {
+				children.collection.push(e);
+				children;
+			}
+		}
+	}
+	return children;
+}
+domtools.QueryTraversing.parent = function(query) {
+	var parents = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		if(node.parentNode != null) {
+			parents.collection.push(node.parentNode);
+			parents;
+		}
+	}
+	return parents;
+}
+domtools.QueryTraversing.ancestors = function(query) {
+	var ancestors = domtools.QueryTraversing.parent(query);
+	if(ancestors.collection.length > 0) ancestors.addCollection(domtools.QueryTraversing.parent(ancestors));
+	return ancestors;
+}
+domtools.QueryTraversing.next = function(query) {
+	var siblings = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		var sibling = node.nextSibling;
+		if(sibling != null) {
+			siblings.collection.push(sibling);
+			siblings;
+		}
+	}
+	return siblings;
+}
+domtools.QueryTraversing.prev = function(query) {
+	var siblings = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		var sibling = node.previousSibling;
+		if(sibling != null) {
+			siblings.collection.push(sibling);
+			siblings;
+		}
+	}
+	return siblings;
+}
+domtools.QueryTraversing.find = function(query,selector) {
+	var newQuery = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		if(domtools.ElementManipulation.isElement(node)) {
+			var element = node;
+			newQuery.addNodeList(element.querySelectorAll(selector));
+		}
+	}
+	return newQuery;
+}
+domtools.QueryTraversing.prototype = {
+	__class__: domtools.QueryTraversing
+}
+autoform.FieldInfo = $hxClasses["autoform.FieldInfo"] = function(field,rtti,meta,formID_in) {
+	this.id = "";
+	this.title = "";
+	this.type = "null";
+	this.required = false;
+	this.description = "";
+	this.help = "";
+	this.validDescription = "";
+	this.validatorString = "";
+	this.validator = null;
+	this.display = "";
+	this.displayOptions = { };
+	this.formID = formID_in;
+	this.formPrefix = this.formID + "-";
+	this.id = field.getNodeName();
+	this.title = this.id;
+	this.fullID = this.formID + "-" + this.id;
+	if(field.firstChild() != null) {
+		var firstChild = field;
+		var pathsFound = 0;
+		do {
+			firstChild = firstChild.firstChild();
+			var path = firstChild.get("path");
+			this.type = pathsFound == 0?path:this.type + "<" + path;
+			pathsFound++;
+		} while(firstChild.firstChild() != null);
+		while(pathsFound > 1) {
+			this.type = this.type + ">";
+			pathsFound--;
+		}
+	}
+	if(Reflect.hasField(meta,this.id)) {
+		var fieldMeta = Reflect.field(meta,this.id);
+		if(Reflect.hasField(fieldMeta,"autoform")) {
+			var autoform = fieldMeta.autoform[0];
+			if(Reflect.hasField(autoform,"title")) this.title = Reflect.field(autoform,"title");
+			if(Reflect.hasField(autoform,"required")) this.required = Reflect.field(autoform,"required");
+			if(Reflect.hasField(autoform,"description")) this.description = Reflect.field(autoform,"description");
+			if(Reflect.hasField(autoform,"help")) this.help = Reflect.field(autoform,"help");
+			if(Reflect.hasField(autoform,"validatorString")) this.validatorString = Reflect.field(autoform,"validatorString");
+			this.validator = this.createValidatorFunction(this.validatorString);
+			if(Reflect.hasField(autoform,"display")) this.display = Reflect.field(autoform,"display");
+			if(Reflect.hasField(autoform,"displayOptions")) this.displayOptions = Reflect.field(autoform,"displayOptions");
+		}
+	}
+}
+autoform.FieldInfo.__name__ = ["autoform","FieldInfo"];
+autoform.FieldInfo.prototype = {
+	id: null
+	,title: null
+	,type: null
+	,required: null
+	,description: null
+	,help: null
+	,validDescription: null
+	,validatorString: null
+	,validator: null
+	,display: null
+	,displayOptions: null
+	,formID: null
+	,formPrefix: null
+	,fullID: null
+	,createValidatorFunction: function(validatorString) {
+		var fn = null;
+		return fn;
+	}
+	,__class__: autoform.FieldInfo
+}
+var ValueType = $hxClasses["ValueType"] = { __ename__ : ["ValueType"], __constructs__ : ["TNull","TInt","TFloat","TBool","TObject","TFunction","TClass","TEnum","TUnknown"] }
+ValueType.TNull = ["TNull",0];
+ValueType.TNull.toString = $estr;
+ValueType.TNull.__enum__ = ValueType;
+ValueType.TInt = ["TInt",1];
+ValueType.TInt.toString = $estr;
+ValueType.TInt.__enum__ = ValueType;
+ValueType.TFloat = ["TFloat",2];
+ValueType.TFloat.toString = $estr;
+ValueType.TFloat.__enum__ = ValueType;
+ValueType.TBool = ["TBool",3];
+ValueType.TBool.toString = $estr;
+ValueType.TBool.__enum__ = ValueType;
+ValueType.TObject = ["TObject",4];
+ValueType.TObject.toString = $estr;
+ValueType.TObject.__enum__ = ValueType;
+ValueType.TFunction = ["TFunction",5];
+ValueType.TFunction.toString = $estr;
+ValueType.TFunction.__enum__ = ValueType;
+ValueType.TClass = function(c) { var $x = ["TClass",6,c]; $x.__enum__ = ValueType; $x.toString = $estr; return $x; }
+ValueType.TEnum = function(e) { var $x = ["TEnum",7,e]; $x.__enum__ = ValueType; $x.toString = $estr; return $x; }
+ValueType.TUnknown = ["TUnknown",8];
+ValueType.TUnknown.toString = $estr;
+ValueType.TUnknown.__enum__ = ValueType;
+var Type = $hxClasses["Type"] = function() { }
 Type.__name__ = ["Type"];
 Type.getClass = function(o) {
 	if(o == null) return null;
@@ -1170,22 +1314,12 @@ Type.getEnumName = function(e) {
 	return a.join(".");
 }
 Type.resolveClass = function(name) {
-	var cl;
-	try {
-		cl = eval(name);
-	} catch( e ) {
-		cl = null;
-	}
+	var cl = $hxClasses[name];
 	if(cl == null || cl.__name__ == null) return null;
 	return cl;
 }
 Type.resolveEnum = function(name) {
-	var e;
-	try {
-		e = eval(name);
-	} catch( err ) {
-		e = null;
-	}
+	var e = $hxClasses[name];
 	if(e == null || e.__ename__ == null) return null;
 	return e;
 }
@@ -1195,7 +1329,8 @@ Type.createInstance = function(cl,args) {
 	return new cl(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7]);
 }
 Type.createEmptyInstance = function(cl) {
-	return new cl($_);
+	function empty() {}; empty.prototype = cl.prototype;
+	return new empty();
 }
 Type.createEnum = function(e,constr,params) {
 	var f = Reflect.field(e,constr);
@@ -1213,14 +1348,17 @@ Type.createEnumIndex = function(e,index,params) {
 	return Type.createEnum(e,c,params);
 }
 Type.getInstanceFields = function(c) {
-	var a = Reflect.fields(c.prototype);
+	var a = [];
+	for(var i in c.prototype) a.push(i);
 	a.remove("__class__");
+	a.remove("__properties__");
 	return a;
 }
 Type.getClassFields = function(c) {
 	var a = Reflect.fields(c);
 	a.remove("__name__");
 	a.remove("__interfaces__");
+	a.remove("__properties__");
 	a.remove("__super__");
 	a.remove("prototype");
 	return a;
@@ -1291,340 +1429,24 @@ Type.allEnums = function(e) {
 	}
 	return all;
 }
-Type.prototype.__class__ = Type;
-haxe.Unserializer = function(buf) {
-	if( buf === $_ ) return;
-	this.buf = buf;
-	this.length = buf.length;
-	this.pos = 0;
-	this.scache = new Array();
-	this.cache = new Array();
-	var r = haxe.Unserializer.DEFAULT_RESOLVER;
-	if(r == null) {
-		r = Type;
-		haxe.Unserializer.DEFAULT_RESOLVER = r;
-	}
-	this.setResolver(r);
+Type.prototype = {
+	__class__: Type
 }
-haxe.Unserializer.__name__ = ["haxe","Unserializer"];
-haxe.Unserializer.initCodes = function() {
-	var codes = new Array();
-	var _g1 = 0, _g = haxe.Unserializer.BASE64.length;
-	while(_g1 < _g) {
-		var i = _g1++;
-		codes[haxe.Unserializer.BASE64.cca(i)] = i;
-	}
-	return codes;
-}
-haxe.Unserializer.run = function(v) {
-	return new haxe.Unserializer(v).unserialize();
-}
-haxe.Unserializer.prototype.buf = null;
-haxe.Unserializer.prototype.pos = null;
-haxe.Unserializer.prototype.length = null;
-haxe.Unserializer.prototype.cache = null;
-haxe.Unserializer.prototype.scache = null;
-haxe.Unserializer.prototype.resolver = null;
-haxe.Unserializer.prototype.setResolver = function(r) {
-	if(r == null) this.resolver = { resolveClass : function(_) {
-		return null;
-	}, resolveEnum : function(_) {
-		return null;
-	}}; else this.resolver = r;
-}
-haxe.Unserializer.prototype.getResolver = function() {
-	return this.resolver;
-}
-haxe.Unserializer.prototype.get = function(p) {
-	return this.buf.cca(p);
-}
-haxe.Unserializer.prototype.readDigits = function() {
-	var k = 0;
-	var s = false;
-	var fpos = this.pos;
-	while(true) {
-		var c = this.buf.cca(this.pos);
-		if(c != c) break;
-		if(c == 45) {
-			if(this.pos != fpos) break;
-			s = true;
-			this.pos++;
-			continue;
-		}
-		if(c < 48 || c > 57) break;
-		k = k * 10 + (c - 48);
-		this.pos++;
-	}
-	if(s) k *= -1;
-	return k;
-}
-haxe.Unserializer.prototype.unserializeObject = function(o) {
-	while(true) {
-		if(this.pos >= this.length) throw "Invalid object";
-		if(this.buf.cca(this.pos) == 103) break;
-		var k = this.unserialize();
-		if(!Std["is"](k,String)) throw "Invalid object key";
-		var v = this.unserialize();
-		o[k] = v;
-	}
-	this.pos++;
-}
-haxe.Unserializer.prototype.unserializeEnum = function(edecl,tag) {
-	var constr = Reflect.field(edecl,tag);
-	if(constr == null) throw "Unknown enum tag " + Type.getEnumName(edecl) + "." + tag;
-	if(this.buf.cca(this.pos++) != 58) throw "Invalid enum format";
-	var nargs = this.readDigits();
-	if(nargs == 0) {
-		this.cache.push(constr);
-		return constr;
-	}
-	var args = new Array();
-	while(nargs > 0) {
-		args.push(this.unserialize());
-		nargs -= 1;
-	}
-	var e = constr.apply(edecl,args);
-	this.cache.push(e);
-	return e;
-}
-haxe.Unserializer.prototype.unserialize = function() {
-	switch(this.buf.cca(this.pos++)) {
-	case 110:
-		return null;
-	case 116:
-		return true;
-	case 102:
-		return false;
-	case 122:
-		return 0;
-	case 105:
-		return this.readDigits();
-	case 100:
-		var p1 = this.pos;
-		while(true) {
-			var c = this.buf.cca(this.pos);
-			if(c >= 43 && c < 58 || c == 101 || c == 69) this.pos++; else break;
-		}
-		return Std.parseFloat(this.buf.substr(p1,this.pos - p1));
-	case 121:
-		var len = this.readDigits();
-		if(this.buf.cca(this.pos++) != 58 || this.length - this.pos < len) throw "Invalid string length";
-		var s = this.buf.substr(this.pos,len);
-		this.pos += len;
-		s = StringTools.urlDecode(s);
-		this.scache.push(s);
-		return s;
-	case 107:
-		return Math.NaN;
-	case 109:
-		return Math.NEGATIVE_INFINITY;
-	case 112:
-		return Math.POSITIVE_INFINITY;
-	case 97:
-		var buf = this.buf;
-		var a = new Array();
-		this.cache.push(a);
-		while(true) {
-			var c = this.buf.cca(this.pos);
-			if(c == 104) {
-				this.pos++;
-				break;
-			}
-			if(c == 117) {
-				this.pos++;
-				var n = this.readDigits();
-				a[a.length + n - 1] = null;
-			} else a.push(this.unserialize());
-		}
-		return a;
-	case 111:
-		var o = { };
-		this.cache.push(o);
-		this.unserializeObject(o);
-		return o;
-	case 114:
-		var n = this.readDigits();
-		if(n < 0 || n >= this.cache.length) throw "Invalid reference";
-		return this.cache[n];
-	case 82:
-		var n = this.readDigits();
-		if(n < 0 || n >= this.scache.length) throw "Invalid string reference";
-		return this.scache[n];
-	case 120:
-		throw this.unserialize();
-		break;
-	case 99:
-		var name = this.unserialize();
-		var cl = this.resolver.resolveClass(name);
-		if(cl == null) throw "Class not found " + name;
-		var o = Type.createEmptyInstance(cl);
-		this.cache.push(o);
-		this.unserializeObject(o);
-		return o;
-	case 119:
-		var name = this.unserialize();
-		var edecl = this.resolver.resolveEnum(name);
-		if(edecl == null) throw "Enum not found " + name;
-		return this.unserializeEnum(edecl,this.unserialize());
-	case 106:
-		var name = this.unserialize();
-		var edecl = this.resolver.resolveEnum(name);
-		if(edecl == null) throw "Enum not found " + name;
-		this.pos++;
-		var index = this.readDigits();
-		var tag = Type.getEnumConstructs(edecl)[index];
-		if(tag == null) throw "Unknown enum index " + name + "@" + index;
-		return this.unserializeEnum(edecl,tag);
-	case 108:
-		var l = new List();
-		this.cache.push(l);
-		var buf = this.buf;
-		while(this.buf.cca(this.pos) != 104) l.add(this.unserialize());
-		this.pos++;
-		return l;
-	case 98:
-		var h = new Hash();
-		this.cache.push(h);
-		var buf = this.buf;
-		while(this.buf.cca(this.pos) != 104) {
-			var s = this.unserialize();
-			h.set(s,this.unserialize());
-		}
-		this.pos++;
-		return h;
-	case 113:
-		var h = new IntHash();
-		this.cache.push(h);
-		var buf = this.buf;
-		var c = this.buf.cca(this.pos++);
-		while(c == 58) {
-			var i = this.readDigits();
-			h.set(i,this.unserialize());
-			c = this.buf.cca(this.pos++);
-		}
-		if(c != 104) throw "Invalid IntHash format";
-		return h;
-	case 118:
-		var d = Date.fromString(this.buf.substr(this.pos,19));
-		this.cache.push(d);
-		this.pos += 19;
-		return d;
-	case 115:
-		var len = this.readDigits();
-		var buf = this.buf;
-		if(this.buf.cca(this.pos++) != 58 || this.length - this.pos < len) throw "Invalid bytes length";
-		var codes = haxe.Unserializer.CODES;
-		if(codes == null) {
-			codes = haxe.Unserializer.initCodes();
-			haxe.Unserializer.CODES = codes;
-		}
-		var i = this.pos;
-		var rest = len & 3;
-		var size = (len >> 2) * 3 + (rest >= 2?rest - 1:0);
-		var max = i + (len - rest);
-		var bytes = haxe.io.Bytes.alloc(size);
-		var bpos = 0;
-		while(i < max) {
-			var c1 = codes[buf.cca(i++)];
-			var c2 = codes[buf.cca(i++)];
-			bytes.b[bpos++] = (c1 << 2 | c2 >> 4) & 255;
-			var c3 = codes[buf.cca(i++)];
-			bytes.b[bpos++] = (c2 << 4 | c3 >> 2) & 255;
-			var c4 = codes[buf.cca(i++)];
-			bytes.b[bpos++] = (c3 << 6 | c4) & 255;
-		}
-		if(rest >= 2) {
-			var c1 = codes[buf.cca(i++)];
-			var c2 = codes[buf.cca(i++)];
-			bytes.b[bpos++] = (c1 << 2 | c2 >> 4) & 255;
-			if(rest == 3) {
-				var c3 = codes[buf.cca(i++)];
-				bytes.b[bpos++] = (c2 << 4 | c3 >> 2) & 255;
-			}
-		}
-		this.pos += len;
-		this.cache.push(bytes);
-		return bytes;
-	case 67:
-		var name = this.unserialize();
-		var cl = this.resolver.resolveClass(name);
-		if(cl == null) throw "Class not found " + name;
-		var o = Type.createEmptyInstance(cl);
-		this.cache.push(o);
-		o.hxUnserialize(this);
-		if(this.buf.cca(this.pos++) != 103) throw "Invalid custom data";
-		return o;
-	default:
-	}
-	this.pos--;
-	throw "Invalid char " + this.buf.charAt(this.pos) + " at position " + this.pos;
-}
-haxe.Unserializer.prototype.__class__ = haxe.Unserializer;
-if(typeof js=='undefined') js = {}
-js.Lib = function() { }
-js.Lib.__name__ = ["js","Lib"];
-js.Lib.isIE = null;
-js.Lib.isOpera = null;
-js.Lib.document = null;
-js.Lib.window = null;
-js.Lib.alert = function(v) {
-	alert(js.Boot.__string_rec(v,""));
-}
-js.Lib.eval = function(code) {
-	return eval(code);
-}
-js.Lib.setErrorHandler = function(f) {
-	js.Lib.onerror = f;
-}
-js.Lib.prototype.__class__ = js.Lib;
-ValueType = { __ename__ : ["ValueType"], __constructs__ : ["TNull","TInt","TFloat","TBool","TObject","TFunction","TClass","TEnum","TUnknown"] }
-ValueType.TNull = ["TNull",0];
-ValueType.TNull.toString = $estr;
-ValueType.TNull.__enum__ = ValueType;
-ValueType.TInt = ["TInt",1];
-ValueType.TInt.toString = $estr;
-ValueType.TInt.__enum__ = ValueType;
-ValueType.TFloat = ["TFloat",2];
-ValueType.TFloat.toString = $estr;
-ValueType.TFloat.__enum__ = ValueType;
-ValueType.TBool = ["TBool",3];
-ValueType.TBool.toString = $estr;
-ValueType.TBool.__enum__ = ValueType;
-ValueType.TObject = ["TObject",4];
-ValueType.TObject.toString = $estr;
-ValueType.TObject.__enum__ = ValueType;
-ValueType.TFunction = ["TFunction",5];
-ValueType.TFunction.toString = $estr;
-ValueType.TFunction.__enum__ = ValueType;
-ValueType.TClass = function(c) { var $x = ["TClass",6,c]; $x.__enum__ = ValueType; $x.toString = $estr; return $x; }
-ValueType.TEnum = function(e) { var $x = ["TEnum",7,e]; $x.__enum__ = ValueType; $x.toString = $estr; return $x; }
-ValueType.TUnknown = ["TUnknown",8];
-ValueType.TUnknown.toString = $estr;
-ValueType.TUnknown.__enum__ = ValueType;
-js.Boot = function() { }
+var js = js || {}
+js.Boot = $hxClasses["js.Boot"] = function() { }
 js.Boot.__name__ = ["js","Boot"];
 js.Boot.__unhtml = function(s) {
 	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
 }
 js.Boot.__trace = function(v,i) {
 	var msg = i != null?i.fileName + ":" + i.lineNumber + ": ":"";
-	msg += js.Boot.__unhtml(js.Boot.__string_rec(v,"")) + "<br/>";
+	msg += js.Boot.__string_rec(v,"");
 	var d = document.getElementById("haxe:trace");
-	if(d == null) alert("No haxe:trace element defined\n" + msg); else d.innerHTML += msg;
+	if(d != null) d.innerHTML += js.Boot.__unhtml(msg) + "<br/>"; else if(typeof(console) != "undefined" && console.log != null) console.log(msg);
 }
 js.Boot.__clear_trace = function() {
 	var d = document.getElementById("haxe:trace");
 	if(d != null) d.innerHTML = "";
-}
-js.Boot.__closure = function(o,f) {
-	var m = o[f];
-	if(m == null) return null;
-	var f1 = function() {
-		return m.apply(o,arguments);
-	};
-	f1.scope = o;
-	f1.method = m;
-	return f1;
 }
 js.Boot.__string_rec = function(o,s) {
 	if(o == null) return "null";
@@ -1675,7 +1497,7 @@ js.Boot.__string_rec = function(o,s) {
 		if(hasp && !o.hasOwnProperty(k)) {
 			continue;
 		}
-		if(k == "prototype" || k == "__class__" || k == "__super__" || k == "__interfaces__") {
+		if(k == "prototype" || k == "__class__" || k == "__super__" || k == "__interfaces__" || k == "__properties__") {
 			continue;
 		}
 		if(str.length != 2) str += ", \n";
@@ -1766,7 +1588,7 @@ js.Boot.__init = function() {
 	if(String.prototype.cca == null) String.prototype.cca = String.prototype.charCodeAt;
 	String.prototype.charCodeAt = function(i) {
 		var x = this.cca(i);
-		if(x != x) return null;
+		if(x != x) return undefined;
 		return x;
 	};
 	var oldsub = String.prototype.substr;
@@ -1779,63 +1601,730 @@ js.Boot.__init = function() {
 		} else if(len < 0) len = this.length + len - pos;
 		return oldsub.apply(this,[pos,len]);
 	};
-	$closure = js.Boot.__closure;
+	Function.prototype["$bind"] = function(o) {
+		var f = function() {
+			return f.method.apply(f.scope,arguments);
+		};
+		f.scope = o;
+		f.method = this;
+		return f;
+	};
 }
-js.Boot.prototype.__class__ = js.Boot;
-IntHash = function(p) {
-	if( p === $_ ) return;
-	this.h = {}
-	if(this.h.__proto__ != null) {
-		this.h.__proto__ = null;
-		delete(this.h.__proto__);
+js.Boot.prototype = {
+	__class__: js.Boot
+}
+var haxe = haxe || {}
+haxe.Firebug = $hxClasses["haxe.Firebug"] = function() { }
+haxe.Firebug.__name__ = ["haxe","Firebug"];
+haxe.Firebug.detect = function() {
+	try {
+		return console != null && console.error != null;
+	} catch( e ) {
+		return false;
 	}
 }
-IntHash.__name__ = ["IntHash"];
-IntHash.prototype.h = null;
-IntHash.prototype.set = function(key,value) {
-	this.h[key] = value;
+haxe.Firebug.redirectTraces = function() {
+	haxe.Log.trace = haxe.Firebug.trace;
+	js.Lib.setErrorHandler(haxe.Firebug.onError);
 }
-IntHash.prototype.get = function(key) {
-	return this.h[key];
-}
-IntHash.prototype.exists = function(key) {
-	return this.h[key] != null;
-}
-IntHash.prototype.remove = function(key) {
-	if(this.h[key] == null) return false;
-	delete(this.h[key]);
+haxe.Firebug.onError = function(err,stack) {
+	var buf = err + "\n";
+	var _g = 0;
+	while(_g < stack.length) {
+		var s = stack[_g];
+		++_g;
+		buf += "Called from " + s + "\n";
+	}
+	haxe.Firebug.trace(buf,null);
 	return true;
 }
-IntHash.prototype.keys = function() {
-	var a = new Array();
-	for( x in this.h ) a.push(x);
-	return a.iterator();
+haxe.Firebug.trace = function(v,inf) {
+	var type = inf != null && inf.customParams != null?inf.customParams[0]:null;
+	if(type != "warn" && type != "info" && type != "debug" && type != "error") type = inf == null?"error":"log";
+	console[type]((inf == null?"":inf.fileName + ":" + inf.lineNumber + " : ") + Std.string(v));
 }
-IntHash.prototype.iterator = function() {
-	return { ref : this.h, it : this.keys(), hasNext : function() {
-		return this.it.hasNext();
-	}, next : function() {
-		var i = this.it.next();
-		return this.ref[i];
-	}};
+haxe.Firebug.prototype = {
+	__class__: haxe.Firebug
 }
-IntHash.prototype.toString = function() {
-	var s = new StringBuf();
-	s.b[s.b.length] = "{";
-	var it = this.keys();
-	while( it.hasNext() ) {
-		var i = it.next();
-		s.b[s.b.length] = i == null?"null":i;
-		s.b[s.b.length] = " => ";
-		s.add(Std.string(this.get(i)));
-		if(it.hasNext()) s.b[s.b.length] = ", ";
+var EReg = $hxClasses["EReg"] = function(r,opt) {
+	opt = opt.split("u").join("");
+	this.r = new RegExp(r,opt);
+}
+EReg.__name__ = ["EReg"];
+EReg.prototype = {
+	r: null
+	,match: function(s) {
+		this.r.m = this.r.exec(s);
+		this.r.s = s;
+		return this.r.m != null;
 	}
-	s.b[s.b.length] = "}";
-	return s.b.join("");
+	,matched: function(n) {
+		return this.r.m != null && n >= 0 && n < this.r.m.length?this.r.m[n]:(function($this) {
+			var $r;
+			throw "EReg::matched";
+			return $r;
+		}(this));
+	}
+	,matchedLeft: function() {
+		if(this.r.m == null) throw "No string matched";
+		return this.r.s.substr(0,this.r.m.index);
+	}
+	,matchedRight: function() {
+		if(this.r.m == null) throw "No string matched";
+		var sz = this.r.m.index + this.r.m[0].length;
+		return this.r.s.substr(sz,this.r.s.length - sz);
+	}
+	,matchedPos: function() {
+		if(this.r.m == null) throw "No string matched";
+		return { pos : this.r.m.index, len : this.r.m[0].length};
+	}
+	,split: function(s) {
+		var d = "#__delim__#";
+		return s.replace(this.r,d).split(d);
+	}
+	,replace: function(s,by) {
+		return s.replace(this.r,by);
+	}
+	,customReplace: function(s,f) {
+		var buf = new StringBuf();
+		while(true) {
+			if(!this.match(s)) break;
+			buf.add(this.matchedLeft());
+			buf.add(f(this));
+			s = this.matchedRight();
+		}
+		buf.b[buf.b.length] = s == null?"null":s;
+		return buf.b.join("");
+	}
+	,__class__: EReg
 }
-IntHash.prototype.__class__ = IntHash;
+var Xml = $hxClasses["Xml"] = function() {
+}
+Xml.__name__ = ["Xml"];
+Xml.Element = null;
+Xml.PCData = null;
+Xml.CData = null;
+Xml.Comment = null;
+Xml.DocType = null;
+Xml.Prolog = null;
+Xml.Document = null;
+Xml.parse = function(str) {
+	var rules = [Xml.enode,Xml.epcdata,Xml.eend,Xml.ecdata,Xml.edoctype,Xml.ecomment,Xml.eprolog];
+	var nrules = rules.length;
+	var current = Xml.createDocument();
+	var stack = new List();
+	while(str.length > 0) {
+		var i = 0;
+		try {
+			while(i < nrules) {
+				var r = rules[i];
+				if(r.match(str)) {
+					switch(i) {
+					case 0:
+						var x = Xml.createElement(r.matched(1));
+						current.addChild(x);
+						str = r.matchedRight();
+						while(Xml.eattribute.match(str)) {
+							x.set(Xml.eattribute.matched(1),Xml.eattribute.matched(3));
+							str = Xml.eattribute.matchedRight();
+						}
+						if(!Xml.eclose.match(str)) {
+							i = nrules;
+							throw "__break__";
+						}
+						if(Xml.eclose.matched(1) == ">") {
+							stack.push(current);
+							current = x;
+						}
+						str = Xml.eclose.matchedRight();
+						break;
+					case 1:
+						var x = Xml.createPCData(r.matched(0));
+						current.addChild(x);
+						str = r.matchedRight();
+						break;
+					case 2:
+						if(current._children != null && current._children.length == 0) {
+							var e = Xml.createPCData("");
+							current.addChild(e);
+						}
+						if(r.matched(1) != current._nodeName || stack.isEmpty()) {
+							i = nrules;
+							throw "__break__";
+						}
+						current = stack.pop();
+						str = r.matchedRight();
+						break;
+					case 3:
+						str = r.matchedRight();
+						if(!Xml.ecdata_end.match(str)) throw "End of CDATA section not found";
+						var x = Xml.createCData(Xml.ecdata_end.matchedLeft());
+						current.addChild(x);
+						str = Xml.ecdata_end.matchedRight();
+						break;
+					case 4:
+						var pos = 0;
+						var count = 0;
+						var old = str;
+						try {
+							while(true) {
+								if(!Xml.edoctype_elt.match(str)) throw "End of DOCTYPE section not found";
+								var p = Xml.edoctype_elt.matchedPos();
+								pos += p.pos + p.len;
+								str = Xml.edoctype_elt.matchedRight();
+								switch(Xml.edoctype_elt.matched(0)) {
+								case "[":
+									count++;
+									break;
+								case "]":
+									count--;
+									if(count < 0) throw "Invalid ] found in DOCTYPE declaration";
+									break;
+								default:
+									if(count == 0) throw "__break__";
+								}
+							}
+						} catch( e ) { if( e != "__break__" ) throw e; }
+						var x = Xml.createDocType(old.substr(10,pos - 11));
+						current.addChild(x);
+						break;
+					case 5:
+						if(!Xml.ecomment_end.match(str)) throw "Unclosed Comment";
+						var p = Xml.ecomment_end.matchedPos();
+						var x = Xml.createComment(str.substr(4,p.pos + p.len - 7));
+						current.addChild(x);
+						str = Xml.ecomment_end.matchedRight();
+						break;
+					case 6:
+						var prolog = r.matched(0);
+						var x = Xml.createProlog(prolog.substr(2,prolog.length - 4));
+						current.addChild(x);
+						str = r.matchedRight();
+						break;
+					}
+					throw "__break__";
+				}
+				i += 1;
+			}
+		} catch( e ) { if( e != "__break__" ) throw e; }
+		if(i == nrules) {
+			if(str.length > 10) throw "Xml parse error : Unexpected " + str.substr(0,10) + "..."; else throw "Xml parse error : Unexpected " + str;
+		}
+	}
+	if(!stack.isEmpty()) throw "Xml parse error : Unclosed " + stack.last().getNodeName();
+	return current;
+}
+Xml.createElement = function(name) {
+	var r = new Xml();
+	r.nodeType = Xml.Element;
+	r._children = new Array();
+	r._attributes = new Hash();
+	r.setNodeName(name);
+	return r;
+}
+Xml.createPCData = function(data) {
+	var r = new Xml();
+	r.nodeType = Xml.PCData;
+	r.setNodeValue(data);
+	return r;
+}
+Xml.createCData = function(data) {
+	var r = new Xml();
+	r.nodeType = Xml.CData;
+	r.setNodeValue(data);
+	return r;
+}
+Xml.createComment = function(data) {
+	var r = new Xml();
+	r.nodeType = Xml.Comment;
+	r.setNodeValue(data);
+	return r;
+}
+Xml.createDocType = function(data) {
+	var r = new Xml();
+	r.nodeType = Xml.DocType;
+	r.setNodeValue(data);
+	return r;
+}
+Xml.createProlog = function(data) {
+	var r = new Xml();
+	r.nodeType = Xml.Prolog;
+	r.setNodeValue(data);
+	return r;
+}
+Xml.createDocument = function() {
+	var r = new Xml();
+	r.nodeType = Xml.Document;
+	r._children = new Array();
+	return r;
+}
+Xml.prototype = {
+	nodeType: null
+	,nodeName: null
+	,nodeValue: null
+	,parent: null
+	,_nodeName: null
+	,_nodeValue: null
+	,_attributes: null
+	,_children: null
+	,_parent: null
+	,getNodeName: function() {
+		if(this.nodeType != Xml.Element) throw "bad nodeType";
+		return this._nodeName;
+	}
+	,setNodeName: function(n) {
+		if(this.nodeType != Xml.Element) throw "bad nodeType";
+		return this._nodeName = n;
+	}
+	,getNodeValue: function() {
+		if(this.nodeType == Xml.Element || this.nodeType == Xml.Document) throw "bad nodeType";
+		return this._nodeValue;
+	}
+	,setNodeValue: function(v) {
+		if(this.nodeType == Xml.Element || this.nodeType == Xml.Document) throw "bad nodeType";
+		return this._nodeValue = v;
+	}
+	,getParent: function() {
+		return this._parent;
+	}
+	,get: function(att) {
+		if(this.nodeType != Xml.Element) throw "bad nodeType";
+		return this._attributes.get(att);
+	}
+	,set: function(att,value) {
+		if(this.nodeType != Xml.Element) throw "bad nodeType";
+		this._attributes.set(att,value);
+	}
+	,remove: function(att) {
+		if(this.nodeType != Xml.Element) throw "bad nodeType";
+		this._attributes.remove(att);
+	}
+	,exists: function(att) {
+		if(this.nodeType != Xml.Element) throw "bad nodeType";
+		return this._attributes.exists(att);
+	}
+	,attributes: function() {
+		if(this.nodeType != Xml.Element) throw "bad nodeType";
+		return this._attributes.keys();
+	}
+	,iterator: function() {
+		if(this._children == null) throw "bad nodetype";
+		return { cur : 0, x : this._children, hasNext : function() {
+			return this.cur < this.x.length;
+		}, next : function() {
+			return this.x[this.cur++];
+		}};
+	}
+	,elements: function() {
+		if(this._children == null) throw "bad nodetype";
+		return { cur : 0, x : this._children, hasNext : function() {
+			var k = this.cur;
+			var l = this.x.length;
+			while(k < l) {
+				if(this.x[k].nodeType == Xml.Element) break;
+				k += 1;
+			}
+			this.cur = k;
+			return k < l;
+		}, next : function() {
+			var k = this.cur;
+			var l = this.x.length;
+			while(k < l) {
+				var n = this.x[k];
+				k += 1;
+				if(n.nodeType == Xml.Element) {
+					this.cur = k;
+					return n;
+				}
+			}
+			return null;
+		}};
+	}
+	,elementsNamed: function(name) {
+		if(this._children == null) throw "bad nodetype";
+		return { cur : 0, x : this._children, hasNext : function() {
+			var k = this.cur;
+			var l = this.x.length;
+			while(k < l) {
+				var n = this.x[k];
+				if(n.nodeType == Xml.Element && n._nodeName == name) break;
+				k++;
+			}
+			this.cur = k;
+			return k < l;
+		}, next : function() {
+			var k = this.cur;
+			var l = this.x.length;
+			while(k < l) {
+				var n = this.x[k];
+				k++;
+				if(n.nodeType == Xml.Element && n._nodeName == name) {
+					this.cur = k;
+					return n;
+				}
+			}
+			return null;
+		}};
+	}
+	,firstChild: function() {
+		if(this._children == null) throw "bad nodetype";
+		return this._children[0];
+	}
+	,firstElement: function() {
+		if(this._children == null) throw "bad nodetype";
+		var cur = 0;
+		var l = this._children.length;
+		while(cur < l) {
+			var n = this._children[cur];
+			if(n.nodeType == Xml.Element) return n;
+			cur++;
+		}
+		return null;
+	}
+	,addChild: function(x) {
+		if(this._children == null) throw "bad nodetype";
+		if(x._parent != null) x._parent._children.remove(x);
+		x._parent = this;
+		this._children.push(x);
+	}
+	,removeChild: function(x) {
+		if(this._children == null) throw "bad nodetype";
+		var b = this._children.remove(x);
+		if(b) x._parent = null;
+		return b;
+	}
+	,insertChild: function(x,pos) {
+		if(this._children == null) throw "bad nodetype";
+		if(x._parent != null) x._parent._children.remove(x);
+		x._parent = this;
+		this._children.insert(pos,x);
+	}
+	,toString: function() {
+		if(this.nodeType == Xml.PCData) return this._nodeValue;
+		if(this.nodeType == Xml.CData) return "<![CDATA[" + this._nodeValue + "]]>";
+		if(this.nodeType == Xml.Comment) return "<!--" + this._nodeValue + "-->";
+		if(this.nodeType == Xml.DocType) return "<!DOCTYPE " + this._nodeValue + ">";
+		if(this.nodeType == Xml.Prolog) return "<?" + this._nodeValue + "?>";
+		var s = new StringBuf();
+		if(this.nodeType == Xml.Element) {
+			s.b[s.b.length] = "<";
+			s.add(this._nodeName);
+			var $it0 = this._attributes.keys();
+			while( $it0.hasNext() ) {
+				var k = $it0.next();
+				s.b[s.b.length] = " ";
+				s.b[s.b.length] = k == null?"null":k;
+				s.b[s.b.length] = "=\"";
+				s.add(this._attributes.get(k));
+				s.b[s.b.length] = "\"";
+			}
+			if(this._children.length == 0) {
+				s.b[s.b.length] = "/>";
+				return s.b.join("");
+			}
+			s.b[s.b.length] = ">";
+		}
+		var $it1 = this.iterator();
+		while( $it1.hasNext() ) {
+			var x = $it1.next();
+			s.add(x.toString());
+		}
+		if(this.nodeType == Xml.Element) {
+			s.b[s.b.length] = "</";
+			s.add(this._nodeName);
+			s.b[s.b.length] = ">";
+		}
+		return s.b.join("");
+	}
+	,__class__: Xml
+	,__properties__: {get_parent:"getParent",set_nodeValue:"setNodeValue",get_nodeValue:"getNodeValue",set_nodeName:"setNodeName",get_nodeName:"getNodeName"}
+}
 if(!haxe.rtti) haxe.rtti = {}
-haxe.rtti.Meta = function() { }
+haxe.rtti.Infos = $hxClasses["haxe.rtti.Infos"] = function() { }
+haxe.rtti.Infos.__name__ = ["haxe","rtti","Infos"];
+haxe.rtti.Infos.prototype = {
+	__class__: haxe.rtti.Infos
+}
+var StringBuf = $hxClasses["StringBuf"] = function() {
+	this.b = new Array();
+}
+StringBuf.__name__ = ["StringBuf"];
+StringBuf.prototype = {
+	add: function(x) {
+		this.b[this.b.length] = x == null?"null":x;
+	}
+	,addSub: function(s,pos,len) {
+		this.b[this.b.length] = s.substr(pos,len);
+	}
+	,addChar: function(c) {
+		this.b[this.b.length] = String.fromCharCode(c);
+	}
+	,toString: function() {
+		return this.b.join("");
+	}
+	,b: null
+	,__class__: StringBuf
+}
+var CommonJS = $hxClasses["CommonJS"] = function() { }
+CommonJS.__name__ = ["CommonJS"];
+CommonJS.getWindow = function() {
+	var window = window;
+	return window;
+}
+CommonJS.getHtmlDocument = function() {
+	var htmlDocument = document;
+	return htmlDocument;
+}
+CommonJS.newElement = function(elementType,htmlElement) {
+	var htmlDocument = CommonJS.getHtmlDocument();
+	if(htmlElement == null) htmlElement = htmlDocument.body;
+	return htmlElement.createElement(elementType);
+}
+CommonJS.get = function(domSelection) {
+	var htmlDocument = CommonJS.getHtmlDocument();
+	return htmlDocument.body.querySelector(domSelection);
+}
+CommonJS.getAll = function(domSelection) {
+	var htmlDocument = CommonJS.getHtmlDocument();
+	return htmlDocument.body.querySelectorAll(domSelection);
+}
+CommonJS.stopEventPropergation = function(event) {
+	if(event.stopPropagation != null) event.stopPropagation(); else if(event.cancelBubble != null) event.cancelBubble = true;
+	if(event.preventDefault != null) event.preventDefault(); else if(event.returnValue != null) event.returnValue = false;
+}
+CommonJS.addEventListener = function(domSelection,eventType,eventHandler,useCapture) {
+	if(useCapture == null) useCapture = true;
+	var nodeList = CommonJS.getAll(domSelection);
+	var _g1 = 0, _g = nodeList.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		var element = nodeList[i];
+		element.addEventListener(eventType,eventHandler,useCapture);
+	}
+}
+CommonJS.removeEventListener = function(domSelection,eventType,eventHandler,useCapture) {
+	if(useCapture == null) useCapture = true;
+	var nodeList = CommonJS.getAll(domSelection);
+	var _g1 = 0, _g = nodeList.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		var element = nodeList[i];
+		element.removeEventListener(eventType,eventHandler,useCapture);
+	}
+}
+CommonJS.getComputedStyle = function(element,style) {
+	var computedStyle;
+	var htmlDocument = CommonJS.getHtmlDocument();
+	if(element.currentStyle != null) computedStyle = element.currentStyle; else computedStyle = htmlDocument.defaultView.getComputedStyle(element,null);
+	return computedStyle.getPropertyValue(style);
+}
+CommonJS.setStyle = function(domSelection,cssStyle,value) {
+	var nodeList = CommonJS.getAll(domSelection);
+	var _g1 = 0, _g = nodeList.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		var element = nodeList[i];
+		element.style[cssStyle] = value;
+	}
+}
+CommonJS.prototype = {
+	__class__: CommonJS
+}
+demo.MySampleModel = $hxClasses["demo.MySampleModel"] = function() { }
+demo.MySampleModel.__name__ = ["demo","MySampleModel"];
+demo.MySampleModel.__interfaces__ = [haxe.rtti.Infos];
+demo.MySampleModel.prototype = {
+	id: null
+	,name: null
+	,email: null
+	,description: null
+	,nicknames: null
+	,state: null
+	,isCool: null
+	,birthday: null
+	,__class__: demo.MySampleModel
+}
+demo.State = $hxClasses["demo.State"] = { __ename__ : ["demo","State"], __constructs__ : ["wa","sa","nt","qld","nsw","act","vic","tas"] }
+demo.State.wa = ["wa",0];
+demo.State.wa.toString = $estr;
+demo.State.wa.__enum__ = demo.State;
+demo.State.sa = ["sa",1];
+demo.State.sa.toString = $estr;
+demo.State.sa.__enum__ = demo.State;
+demo.State.nt = ["nt",2];
+demo.State.nt.toString = $estr;
+demo.State.nt.__enum__ = demo.State;
+demo.State.qld = ["qld",3];
+demo.State.qld.toString = $estr;
+demo.State.qld.__enum__ = demo.State;
+demo.State.nsw = ["nsw",4];
+demo.State.nsw.toString = $estr;
+demo.State.nsw.__enum__ = demo.State;
+demo.State.act = ["act",5];
+demo.State.act.toString = $estr;
+demo.State.act.__enum__ = demo.State;
+demo.State.vic = ["vic",6];
+demo.State.vic.toString = $estr;
+demo.State.vic.__enum__ = demo.State;
+demo.State.tas = ["tas",7];
+demo.State.tas.toString = $estr;
+demo.State.tas.__enum__ = demo.State;
+var Lambda = $hxClasses["Lambda"] = function() { }
+Lambda.__name__ = ["Lambda"];
+Lambda.array = function(it) {
+	var a = new Array();
+	var $it0 = it.iterator();
+	while( $it0.hasNext() ) {
+		var i = $it0.next();
+		a.push(i);
+	}
+	return a;
+}
+Lambda.list = function(it) {
+	var l = new List();
+	var $it0 = it.iterator();
+	while( $it0.hasNext() ) {
+		var i = $it0.next();
+		l.add(i);
+	}
+	return l;
+}
+Lambda.map = function(it,f) {
+	var l = new List();
+	var $it0 = it.iterator();
+	while( $it0.hasNext() ) {
+		var x = $it0.next();
+		l.add(f(x));
+	}
+	return l;
+}
+Lambda.mapi = function(it,f) {
+	var l = new List();
+	var i = 0;
+	var $it0 = it.iterator();
+	while( $it0.hasNext() ) {
+		var x = $it0.next();
+		l.add(f(i++,x));
+	}
+	return l;
+}
+Lambda.has = function(it,elt,cmp) {
+	if(cmp == null) {
+		var $it0 = it.iterator();
+		while( $it0.hasNext() ) {
+			var x = $it0.next();
+			if(x == elt) return true;
+		}
+	} else {
+		var $it1 = it.iterator();
+		while( $it1.hasNext() ) {
+			var x = $it1.next();
+			if(cmp(x,elt)) return true;
+		}
+	}
+	return false;
+}
+Lambda.exists = function(it,f) {
+	var $it0 = it.iterator();
+	while( $it0.hasNext() ) {
+		var x = $it0.next();
+		if(f(x)) return true;
+	}
+	return false;
+}
+Lambda.foreach = function(it,f) {
+	var $it0 = it.iterator();
+	while( $it0.hasNext() ) {
+		var x = $it0.next();
+		if(!f(x)) return false;
+	}
+	return true;
+}
+Lambda.iter = function(it,f) {
+	var $it0 = it.iterator();
+	while( $it0.hasNext() ) {
+		var x = $it0.next();
+		f(x);
+	}
+}
+Lambda.filter = function(it,f) {
+	var l = new List();
+	var $it0 = it.iterator();
+	while( $it0.hasNext() ) {
+		var x = $it0.next();
+		if(f(x)) l.add(x);
+	}
+	return l;
+}
+Lambda.fold = function(it,f,first) {
+	var $it0 = it.iterator();
+	while( $it0.hasNext() ) {
+		var x = $it0.next();
+		first = f(x,first);
+	}
+	return first;
+}
+Lambda.count = function(it,pred) {
+	var n = 0;
+	if(pred == null) {
+		var $it0 = it.iterator();
+		while( $it0.hasNext() ) {
+			var _ = $it0.next();
+			n++;
+		}
+	} else {
+		var $it1 = it.iterator();
+		while( $it1.hasNext() ) {
+			var x = $it1.next();
+			if(pred(x)) n++;
+		}
+	}
+	return n;
+}
+Lambda.empty = function(it) {
+	return !it.iterator().hasNext();
+}
+Lambda.indexOf = function(it,v) {
+	var i = 0;
+	var $it0 = it.iterator();
+	while( $it0.hasNext() ) {
+		var v2 = $it0.next();
+		if(v == v2) return i;
+		i++;
+	}
+	return -1;
+}
+Lambda.concat = function(a,b) {
+	var l = new List();
+	var $it0 = a.iterator();
+	while( $it0.hasNext() ) {
+		var x = $it0.next();
+		l.add(x);
+	}
+	var $it1 = b.iterator();
+	while( $it1.hasNext() ) {
+		var x = $it1.next();
+		l.add(x);
+	}
+	return l;
+}
+Lambda.prototype = {
+	__class__: Lambda
+}
+autoform.ui.TextArea = $hxClasses["autoform.ui.TextArea"] = function(field) {
+	autoform.AbstractField.call(this,"div");
+	domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.addClass(this,"af-field-container"),field.id);
+	domtools.QueryElementManipulation.setInnerHTML(this,"<label></label><textarea />");
+	domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.setAttr(domtools.QueryTraversing.find(this,"textarea"),"id",field.fullID),".input");
+	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setText(domtools.QueryTraversing.find(this,"label"),field.title),"for",field.fullID);
+	if(field.description != "") domtools.QueryDOMManipulation.append(domtools.QueryTraversing.find(this,"label"),domtools.ElementManipulation.setText(document.createElement("p"),field.description));
+}
+autoform.ui.TextArea.__name__ = ["autoform","ui","TextArea"];
+autoform.ui.TextArea.__super__ = autoform.AbstractField;
+autoform.ui.TextArea.prototype = $extend(autoform.AbstractField.prototype,{
+	__class__: autoform.ui.TextArea
+});
+haxe.rtti.Meta = $hxClasses["haxe.rtti.Meta"] = function() { }
 haxe.rtti.Meta.__name__ = ["haxe","rtti","Meta"];
 haxe.rtti.Meta.getType = function(t) {
 	var meta = t.__meta__;
@@ -1849,41 +2338,375 @@ haxe.rtti.Meta.getFields = function(t) {
 	var meta = t.__meta__;
 	return meta == null || meta.fields == null?{ }:meta.fields;
 }
-haxe.rtti.Meta.prototype.__class__ = haxe.rtti.Meta;
-if(typeof autoform=='undefined') autoform = {}
-autoform.AutoForm = function(c) {
-	if( c === $_ ) return;
-	this.classval = c;
-	var m = haxe.rtti.Meta.getType(this.classval).rtti;
-	if(m == null) throw "Missing @rtti for class " + Type.getClassName(this.classval);
-	this.table_infos = haxe.Unserializer.run(m[0]);
-	this.table_name = this.table_infos.name;
-	this.table_keys = this.table_infos.key;
-	this.table_fields = new List();
-	var _g = 0, _g1 = this.table_infos.fields;
-	while(_g < _g1.length) {
-		var f = _g1[_g];
-		++_g;
-		this.table_fields.add(f.name);
-		haxe.Log.trace(f,{ fileName : "AutoForm.hx", lineNumber : 25, className : "autoform.AutoForm", methodName : "new"});
+haxe.rtti.Meta.prototype = {
+	__class__: haxe.rtti.Meta
+}
+autoform.AutoForm = $hxClasses["autoform.AutoForm"] = function(c,formID) {
+	domtools.AbstractCustomElement.call(this,"form");
+	if(formID == null) {
+		autoform.AutoForm.formIDIncrement = autoform.AutoForm.formIDIncrement + 1;
+		formID = "af-" + autoform.AutoForm.formIDIncrement;
 	}
+	haxe.Log.trace(formID,{ fileName : "AutoForm.hx", lineNumber : 29, className : "autoform.AutoForm", methodName : "new"});
+	this.fields = new Array();
+	this.classval = c;
+	var rttiString = c.__rtti;
+	var rtti = Xml.parse(rttiString).firstElement();
+	this.meta = haxe.rtti.Meta.getFields(c);
+	haxe.Log.trace(rtti.toString(),{ fileName : "AutoForm.hx", lineNumber : 38, className : "autoform.AutoForm", methodName : "new"});
+	var fieldsXml = rtti.elements();
+	while( fieldsXml.hasNext() ) {
+		var field = fieldsXml.next();
+		if(field.getNodeName() != "implements") {
+			haxe.Log.trace(field,{ fileName : "AutoForm.hx", lineNumber : 46, className : "autoform.AutoForm", methodName : "new"});
+			this.fields.push(new autoform.FieldInfo(field,rtti,this.meta,formID));
+		} else haxe.Log.trace("gotcha",{ fileName : "AutoForm.hx", lineNumber : 50, className : "autoform.AutoForm", methodName : "new"});
+	}
+	var renderer = new autoform.renderer.DefaultRenderer(this);
+	renderer.run(this.fields);
 }
 autoform.AutoForm.__name__ = ["autoform","AutoForm"];
-autoform.AutoForm.prototype.classval = null;
-autoform.AutoForm.prototype.table_infos = null;
-autoform.AutoForm.prototype.table_name = null;
-autoform.AutoForm.prototype.table_fields = null;
-autoform.AutoForm.prototype.table_keys = null;
-autoform.AutoForm.prototype.populateForm = function(object) {
+autoform.AutoForm.__super__ = domtools.AbstractCustomElement;
+autoform.AutoForm.prototype = $extend(domtools.AbstractCustomElement.prototype,{
+	classval: null
+	,rtti: null
+	,meta: null
+	,fields: null
+	,populateForm: function(object) {
+	}
+	,readForm: function() {
+		var object = Type.createEmptyInstance(this.classval);
+		return object;
+	}
+	,__class__: autoform.AutoForm
+});
+autoform.ui.CheckBox = $hxClasses["autoform.ui.CheckBox"] = function(field) {
+	autoform.AbstractField.call(this,"div");
+	domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.addClass(this,"af-field-container"),field.id);
+	domtools.QueryElementManipulation.setInnerHTML(this,"<div><input /><label></label></div>");
+	domtools.QueryElementManipulation.addClass(domtools.QueryTraversing.find(this,"div"),"checkbox");
+	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setAttr(domtools.QueryTraversing.find(this,"input"),"type","checkbox"),"id",field.fullID);
+	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setText(domtools.QueryTraversing.find(this,"label"),field.title),"for",field.fullID);
+	haxe.Log.trace(field.description,{ fileName : "CheckBox.hx", lineNumber : 24, className : "autoform.ui.CheckBox", methodName : "new"});
+	if(field.description != "") {
+		haxe.Log.trace("hey?",{ fileName : "CheckBox.hx", lineNumber : 27, className : "autoform.ui.CheckBox", methodName : "new"});
+		domtools.QueryDOMManipulation.prepend(this,domtools.ElementManipulation.setText(document.createElement("p"),field.description));
+	}
 }
-autoform.AutoForm.prototype.readForm = function() {
-	var object = Type.createEmptyInstance(this.classval);
-	return object;
+autoform.ui.CheckBox.__name__ = ["autoform","ui","CheckBox"];
+autoform.ui.CheckBox.__super__ = autoform.AbstractField;
+autoform.ui.CheckBox.prototype = $extend(autoform.AbstractField.prototype,{
+	__class__: autoform.ui.CheckBox
+});
+autoform.ui.HiddenField = $hxClasses["autoform.ui.HiddenField"] = function(field) {
+	autoform.AbstractField.call(this,"div");
+	domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.setInnerHTML(this,"<input />"),field.id);
+	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setAttr(domtools.QueryTraversing.find(this,"input"),"type","hidden"),"id",field.fullID);
 }
-autoform.AutoForm.prototype.__class__ = autoform.AutoForm;
-$_ = {}
+autoform.ui.HiddenField.__name__ = ["autoform","ui","HiddenField"];
+autoform.ui.HiddenField.__super__ = autoform.AbstractField;
+autoform.ui.HiddenField.prototype = $extend(autoform.AbstractField.prototype,{
+	__class__: autoform.ui.HiddenField
+});
+haxe.Log = $hxClasses["haxe.Log"] = function() { }
+haxe.Log.__name__ = ["haxe","Log"];
+haxe.Log.trace = function(v,infos) {
+	js.Boot.__trace(v,infos);
+}
+haxe.Log.clear = function() {
+	js.Boot.__clear_trace();
+}
+haxe.Log.prototype = {
+	__class__: haxe.Log
+}
+var Hash = $hxClasses["Hash"] = function() {
+	this.h = {}
+	if(this.h.__proto__ != null) {
+		this.h.__proto__ = null;
+		delete(this.h.__proto__);
+	}
+}
+Hash.__name__ = ["Hash"];
+Hash.prototype = {
+	h: null
+	,set: function(key,value) {
+		this.h["$" + key] = value;
+	}
+	,get: function(key) {
+		return this.h["$" + key];
+	}
+	,exists: function(key) {
+		try {
+			key = "$" + key;
+			return this.hasOwnProperty.call(this.h,key);
+		} catch( e ) {
+			for(var i in this.h) if( i == key ) return true;
+			return false;
+		}
+	}
+	,remove: function(key) {
+		if(!this.exists(key)) return false;
+		delete(this.h["$" + key]);
+		return true;
+	}
+	,keys: function() {
+		var a = new Array();
+		for(var i in this.h) a.push(i.substr(1));
+		return a.iterator();
+	}
+	,iterator: function() {
+		return { ref : this.h, it : this.keys(), hasNext : function() {
+			return this.it.hasNext();
+		}, next : function() {
+			var i = this.it.next();
+			return this.ref["$" + i];
+		}};
+	}
+	,toString: function() {
+		var s = new StringBuf();
+		s.b[s.b.length] = "{";
+		var it = this.keys();
+		while( it.hasNext() ) {
+			var i = it.next();
+			s.b[s.b.length] = i == null?"null":i;
+			s.b[s.b.length] = " => ";
+			s.add(Std.string(this.get(i)));
+			if(it.hasNext()) s.b[s.b.length] = ", ";
+		}
+		s.b[s.b.length] = "}";
+		return s.b.join("");
+	}
+	,__class__: Hash
+}
+var Std = $hxClasses["Std"] = function() { }
+Std.__name__ = ["Std"];
+Std["is"] = function(v,t) {
+	return js.Boot.__instanceof(v,t);
+}
+Std.string = function(s) {
+	return js.Boot.__string_rec(s,"");
+}
+Std["int"] = function(x) {
+	if(x < 0) return Math.ceil(x);
+	return Math.floor(x);
+}
+Std.parseInt = function(x) {
+	var v = parseInt(x,10);
+	if(v == 0 && x.charCodeAt(1) == 120) v = parseInt(x);
+	if(isNaN(v)) return null;
+	return v;
+}
+Std.parseFloat = function(x) {
+	return parseFloat(x);
+}
+Std.random = function(x) {
+	return Math.floor(Math.random() * x);
+}
+Std.prototype = {
+	__class__: Std
+}
+if(!autoform.renderer) autoform.renderer = {}
+autoform.renderer.DefaultRenderer = $hxClasses["autoform.renderer.DefaultRenderer"] = function(form) {
+	autoform.AbstractRenderer.call(this,form);
+	this.displays.set("text",autoform.ui.TextField);
+	this.displays.set("textarea",autoform.ui.TextArea);
+	this.displays.set("hidden",autoform.ui.HiddenField);
+	this.displays.set("checkbox",autoform.ui.CheckBox);
+}
+autoform.renderer.DefaultRenderer.__name__ = ["autoform","renderer","DefaultRenderer"];
+autoform.renderer.DefaultRenderer.__super__ = autoform.AbstractRenderer;
+autoform.renderer.DefaultRenderer.prototype = $extend(autoform.AbstractRenderer.prototype,{
+	run: function(fields) {
+		var _g = 0;
+		while(_g < fields.length) {
+			var field = fields[_g];
+			++_g;
+			var thisClass = String;
+			var element;
+			var display = autoform.AbstractRenderer.guessDisplay(field);
+			var classOfFieldUI = this.displays.exists(display)?this.displays.get(display):this.displays.get("text");
+			element = Type.createInstance(classOfFieldUI,[field]);
+			domtools.QueryDOMManipulation.appendTo(element,null,this.form);
+		}
+	}
+	,__class__: autoform.renderer.DefaultRenderer
+});
+js.Lib = $hxClasses["js.Lib"] = function() { }
+js.Lib.__name__ = ["js","Lib"];
+js.Lib.isIE = null;
+js.Lib.isOpera = null;
+js.Lib.document = null;
+js.Lib.window = null;
+js.Lib.alert = function(v) {
+	alert(js.Boot.__string_rec(v,""));
+}
+js.Lib.eval = function(code) {
+	return eval(code);
+}
+js.Lib.setErrorHandler = function(f) {
+	js.Lib.onerror = f;
+}
+js.Lib.prototype = {
+	__class__: js.Lib
+}
+var StringTools = $hxClasses["StringTools"] = function() { }
+StringTools.__name__ = ["StringTools"];
+StringTools.urlEncode = function(s) {
+	return encodeURIComponent(s);
+}
+StringTools.urlDecode = function(s) {
+	return decodeURIComponent(s.split("+").join(" "));
+}
+StringTools.htmlEscape = function(s) {
+	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
+}
+StringTools.htmlUnescape = function(s) {
+	return s.split("&gt;").join(">").split("&lt;").join("<").split("&amp;").join("&");
+}
+StringTools.startsWith = function(s,start) {
+	return s.length >= start.length && s.substr(0,start.length) == start;
+}
+StringTools.endsWith = function(s,end) {
+	var elen = end.length;
+	var slen = s.length;
+	return slen >= elen && s.substr(slen - elen,elen) == end;
+}
+StringTools.isSpace = function(s,pos) {
+	var c = s.charCodeAt(pos);
+	return c >= 9 && c <= 13 || c == 32;
+}
+StringTools.ltrim = function(s) {
+	var l = s.length;
+	var r = 0;
+	while(r < l && StringTools.isSpace(s,r)) r++;
+	if(r > 0) return s.substr(r,l - r); else return s;
+}
+StringTools.rtrim = function(s) {
+	var l = s.length;
+	var r = 0;
+	while(r < l && StringTools.isSpace(s,l - r - 1)) r++;
+	if(r > 0) return s.substr(0,l - r); else return s;
+}
+StringTools.trim = function(s) {
+	return StringTools.ltrim(StringTools.rtrim(s));
+}
+StringTools.rpad = function(s,c,l) {
+	var sl = s.length;
+	var cl = c.length;
+	while(sl < l) if(l - sl < cl) {
+		s += c.substr(0,l - sl);
+		sl = l;
+	} else {
+		s += c;
+		sl += cl;
+	}
+	return s;
+}
+StringTools.lpad = function(s,c,l) {
+	var ns = "";
+	var sl = s.length;
+	if(sl >= l) return s;
+	var cl = c.length;
+	while(sl < l) if(l - sl < cl) {
+		ns += c.substr(0,l - sl);
+		sl = l;
+	} else {
+		ns += c;
+		sl += cl;
+	}
+	return ns + s;
+}
+StringTools.replace = function(s,sub,by) {
+	return s.split(sub).join(by);
+}
+StringTools.hex = function(n,digits) {
+	var s = "";
+	var hexChars = "0123456789ABCDEF";
+	do {
+		s = hexChars.charAt(n & 15) + s;
+		n >>>= 4;
+	} while(n > 0);
+	if(digits != null) while(s.length < digits) s = "0" + s;
+	return s;
+}
+StringTools.fastCodeAt = function(s,index) {
+	return s.cca(index);
+}
+StringTools.isEOF = function(c) {
+	return c != c;
+}
+StringTools.prototype = {
+	__class__: StringTools
+}
 js.Boot.__res = {}
 js.Boot.__init();
+{
+	Object.prototype.iterator = function() {
+      var o = this.instanceKeys();
+      var y = this;
+      return {
+        cur : 0,
+        arr : o,
+        hasNext: function() { return this.cur < this.arr.length; },
+        next: function() { return y[this.arr[this.cur++]]; }
+      };
+    }
+	Object.prototype.instanceKeys = function(proto) {
+      var keys = [];
+      proto = !proto;
+      for(var i in this) {
+        if(proto && Object.prototype[i]) continue;
+        keys.push(i);
+      }
+      return keys;
+    }
+}
+{
+	Math.__name__ = ["Math"];
+	Math.NaN = Number["NaN"];
+	Math.NEGATIVE_INFINITY = Number["NEGATIVE_INFINITY"];
+	Math.POSITIVE_INFINITY = Number["POSITIVE_INFINITY"];
+	$hxClasses["Math"] = Math;
+	Math.isFinite = function(i) {
+		return isFinite(i);
+	};
+	Math.isNaN = function(i) {
+		return isNaN(i);
+	};
+}
+{
+	Xml.Element = "element";
+	Xml.PCData = "pcdata";
+	Xml.CData = "cdata";
+	Xml.Comment = "comment";
+	Xml.DocType = "doctype";
+	Xml.Prolog = "prolog";
+	Xml.Document = "document";
+}
+{
+	String.prototype.__class__ = $hxClasses["String"] = String;
+	String.__name__ = ["String"];
+	Array.prototype.__class__ = $hxClasses["Array"] = Array;
+	Array.__name__ = ["Array"];
+	Int = $hxClasses["Int"] = { __name__ : ["Int"]};
+	Dynamic = $hxClasses["Dynamic"] = { __name__ : ["Dynamic"]};
+	Float = $hxClasses["Float"] = Number;
+	Float.__name__ = ["Float"];
+	Bool = $hxClasses["Bool"] = { __ename__ : ["Bool"]};
+	Class = $hxClasses["Class"] = { __name__ : ["Class"]};
+	Enum = { };
+	Void = $hxClasses["Void"] = { __ename__ : ["Void"]};
+}
+{
+	js.Lib.document = document;
+	js.Lib.window = window;
+	onerror = function(msg,url,line) {
+		var f = js.Lib.onerror;
+		if( f == null )
+			return false;
+		return f(msg,[url+":"+line]);
+	}
+}
 {
 	var d = Date;
 	d.now = function() {
@@ -1925,66 +2748,26 @@ js.Boot.__init();
 		var s = date.getSeconds();
 		return date.getFullYear() + "-" + (m < 10?"0" + m:"" + m) + "-" + (d1 < 10?"0" + d1:"" + d1) + " " + (h < 10?"0" + h:"" + h) + ":" + (mi < 10?"0" + mi:"" + mi) + ":" + (s < 10?"0" + s:"" + s);
 	};
-	d.prototype.__class__ = d;
+	d.prototype.__class__ = $hxClasses["Date"] = d;
 	d.__name__ = ["Date"];
 }
-{
-	String.prototype.__class__ = String;
-	String.__name__ = ["String"];
-	Array.prototype.__class__ = Array;
-	Array.__name__ = ["Array"];
-	Int = { __name__ : ["Int"]};
-	Dynamic = { __name__ : ["Dynamic"]};
-	Float = Number;
-	Float.__name__ = ["Float"];
-	Bool = { __ename__ : ["Bool"]};
-	Class = { __name__ : ["Class"]};
-	Enum = { };
-	Void = { __ename__ : ["Void"]};
-}
-{
-	Math.__name__ = ["Math"];
-	Math.NaN = Number["NaN"];
-	Math.NEGATIVE_INFINITY = Number["NEGATIVE_INFINITY"];
-	Math.POSITIVE_INFINITY = Number["POSITIVE_INFINITY"];
-	Math.isFinite = function(i) {
-		return isFinite(i);
-	};
-	Math.isNaN = function(i) {
-		return isNaN(i);
-	};
-}
-{
-	js.Lib.document = document;
-	js.Lib.window = window;
-	onerror = function(msg,url,line) {
-		var f = js.Lib.onerror;
-		if( f == null )
-			return false;
-		return f(msg,[url+":"+line]);
-	}
-}
-sys.db.Manager.cache_field = "__cache__";
-sys.db.Manager.object_cache = new Hash();
-sys.db.Manager.init_list = new List();
-sys.db.Manager.KEYWORDS = (function($this) {
-	var $r;
-	var h = new Hash();
-	{
-		var _g = 0, _g1 = "ADD|ALL|ALTER|ANALYZE|AND|AS|ASC|ASENSITIVE|BEFORE|BETWEEN|BIGINT|BINARY|BLOB|BOTH|BY|CALL|CASCADE|CASE|CHANGE|CHAR|CHARACTER|CHECK|COLLATE|COLUMN|CONDITION|CONSTRAINT|CONTINUE|CONVERT|CREATE|CROSS|CURRENT_DATE|CURRENT_TIME|CURRENT_TIMESTAMP|CURRENT_USER|CURSOR|DATABASE|DATABASES|DAY_HOUR|DAY_MICROSECOND|DAY_MINUTE|DAY_SECOND|DEC|DECIMAL|DECLARE|DEFAULT|DELAYED|DELETE|DESC|DESCRIBE|DETERMINISTIC|DISTINCT|DISTINCTROW|DIV|DOUBLE|DROP|DUAL|EACH|ELSE|ELSEIF|ENCLOSED|ESCAPED|EXISTS|EXIT|EXPLAIN|FALSE|FETCH|FLOAT|FLOAT4|FLOAT8|FOR|FORCE|FOREIGN|FROM|FULLTEXT|GRANT|GROUP|HAVING|HIGH_PRIORITY|HOUR_MICROSECOND|HOUR_MINUTE|HOUR_SECOND|IF|IGNORE|IN|INDEX|INFILE|INNER|INOUT|INSENSITIVE|INSERT|INT|INT1|INT2|INT3|INT4|INT8|INTEGER|INTERVAL|INTO|IS|ITERATE|JOIN|KEY|KEYS|KILL|LEADING|LEAVE|LEFT|LIKE|LIMIT|LINES|LOAD|LOCALTIME|LOCALTIMESTAMP|LOCK|LONG|LONGBLOB|LONGTEXT|LOOP|LOW_PRIORITY|MATCH|MEDIUMBLOB|MEDIUMINT|MEDIUMTEXT|MIDDLEINT|MINUTE_MICROSECOND|MINUTE_SECOND|MOD|MODIFIES|NATURAL|NOT|NO_WRITE_TO_BINLOG|NULL|NUMERIC|ON|OPTIMIZE|OPTION|OPTIONALLY|OR|ORDER|OUT|OUTER|OUTFILE|PRECISION|PRIMARY|PROCEDURE|PURGE|READ|READS|REAL|REFERENCES|REGEXP|RELEASE|RENAME|REPEAT|REPLACE|REQUIRE|RESTRICT|RETURN|REVOKE|RIGHT|RLIKE|SCHEMA|SCHEMAS|SECOND_MICROSECOND|SELECT|SENSITIVE|SEPARATOR|SET|SHOW|SMALLINT|SONAME|SPATIAL|SPECIFIC|SQL|SQLEXCEPTION|SQLSTATE|SQLWARNING|SQL_BIG_RESULT|SQL_CALC_FOUND_ROWS|SQL_SMALL_RESULT|SSL|STARTING|STRAIGHT_JOIN|TABLE|TERMINATED|THEN|TINYBLOB|TINYINT|TINYTEXT|TO|TRAILING|TRIGGER|TRUE|UNDO|UNION|UNIQUE|UNLOCK|UNSIGNED|UPDATE|USAGE|USE|USING|UTC_DATE|UTC_TIME|UTC_TIMESTAMP|VALUES|VARBINARY|VARCHAR|VARCHARACTER|VARYING|WHEN|WHERE|WHILE|WITH|WRITE|XOR|YEAR_MONTH|ZEROFILL|ASENSITIVE|CALL|CONDITION|CONNECTION|CONTINUE|CURSOR|DECLARE|DETERMINISTIC|EACH|ELSEIF|EXIT|FETCH|GOTO|INOUT|INSENSITIVE|ITERATE|LABEL|LEAVE|LOOP|MODIFIES|OUT|READS|RELEASE|REPEAT|RETURN|SCHEMA|SCHEMAS|SENSITIVE|SPECIFIC|SQL|SQLEXCEPTION|SQLSTATE|SQLWARNING|TRIGGER|UNDO|UPGRADE|WHILE".split("|");
-		while(_g < _g1.length) {
-			var k = _g1[_g];
-			++_g;
-			h.set(k.toLowerCase(),true);
-		}
-	}
-	$r = h;
-	return $r;
-}(this));
-demo.MySampleModel.__meta__ = { obj : { rtti : ["oy9:relationsahy3:keyay2:idhy4:namey13:MySampleModely6:fieldsaoy1:tjy15:sys.db.SpodType:1:0R3R2y6:isNullfgoR6jR7:15:0R3R3R8fgoR6r7R3y5:emailR8fgoR6jR7:11:0R3y8:birthdayR8fghy7:hfieldsbR10r9R2r4R9r8R3r6hy7:indexesahg"]}};
-demo.MySampleModel.manager = new sys.db.Manager(demo.MySampleModel);
-haxe.Unserializer.DEFAULT_RESOLVER = Type;
-haxe.Unserializer.BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%:";
-haxe.Unserializer.CODES = null;
+domtools.ElementManipulation.NodeTypeElement = 1;
+domtools.ElementManipulation.NodeTypeAttribute = 2;
+domtools.ElementManipulation.NodeTypeText = 3;
+Xml.enode = new EReg("^<([a-zA-Z0-9:._-]+)","");
+Xml.ecdata = new EReg("^<!\\[CDATA\\[","i");
+Xml.edoctype = new EReg("^<!DOCTYPE ","i");
+Xml.eend = new EReg("^</([a-zA-Z0-9:._-]+)>","");
+Xml.epcdata = new EReg("^[^<]+","");
+Xml.ecomment = new EReg("^<!--","");
+Xml.eprolog = new EReg("^<\\?[^\\?]+\\?>","");
+Xml.eattribute = new EReg("^\\s*([a-zA-Z0-9:_-]+)\\s*=\\s*([\"'])([^\\2]*?)\\2","");
+Xml.eclose = new EReg("^[ \r\n\t]*(>|(/>))","");
+Xml.ecdata_end = new EReg("\\]\\]>","");
+Xml.edoctype_elt = new EReg("[\\[|\\]>]","");
+Xml.ecomment_end = new EReg("-->","");
+demo.MySampleModel.__meta__ = { fields : { id : { autoform : [{ required : true, title : "Database ID", display : "hidden"}]}, name : { autoform : [{ title : "Your name"}]}, email : { autoform : [{ title : "Your email address", description : "We promise not to send you spam!  We use your email only to help you restore your password."}]}, description : { autoform : [{ display : "textarea", description : "This will not affect your application, it is merely for statistical purposes."}]}, isCool : { autoform : [{ title : "Are you pretty cool?"}]}}};
+demo.MySampleModel.__rtti = "<class path=\"demo.MySampleModel\" params=\"\">\n\t<implements path=\"haxe.rtti.Infos\"/>\n\t<id public=\"1\"><c path=\"Int\"/></id>\n\t<name public=\"1\"><c path=\"String\"/></name>\n\t<email public=\"1\"><t path=\"Null\"><c path=\"String\"/></t></email>\n\t<description public=\"1\"><c path=\"String\"/></description>\n\t<nicknames public=\"1\"><c path=\"Array\"><c path=\"String\"/></c></nicknames>\n\t<state public=\"1\"><e path=\"demo.State\"/></state>\n\t<isCool public=\"1\"><e path=\"Bool\"/></isCool>\n\t<birthday public=\"1\"><c path=\"Date\"/></birthday>\n</class>";
+autoform.AutoForm.formIDIncrement = 0;
 js.Lib.onerror = null;
 demo.Main.main()
