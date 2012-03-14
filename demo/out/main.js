@@ -263,10 +263,10 @@ autoform.ui.TextField = function(field) {
 	if( field === $_ ) return;
 	autoform.AbstractField.call(this,"div");
 	domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.addClass(this,"af-field-container"),field.id);
-	domtools.QueryElementManipulation.setInnerHTML(this,"<label></label><input />");
+	domtools.QueryElementManipulation.setInnerHTML(this,"<label></label><input /><span />");
 	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setAttr(domtools.QueryTraversing.find(this,"input"),"type","text"),"id",field.fullID),"placeholder",field.placeholder);
 	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setText(domtools.QueryTraversing.find(this,"label"),field.title),"for",field.fullID);
-	if(field.description != "") domtools.QueryDOMManipulation.append(domtools.QueryTraversing.find(this,"label"),domtools.ElementManipulation.setText(document.createElement("p"),field.description));
+	if(field.description != "") domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.setText(domtools.QueryTraversing.find(this,"span"),field.description),"help-inline");
 }
 autoform.ui.TextField.__name__ = ["autoform","ui","TextField"];
 autoform.ui.TextField.__super__ = autoform.AbstractField;
@@ -394,7 +394,7 @@ autoform.AbstractRenderer.guessDisplay = function(field) {
 		default:
 			$r = (function($this) {
 				var $r;
-				haxe.Log.trace("Is this a function: ",{ fileName : "AbstractRenderer.hx", lineNumber : 55, className : "autoform.AbstractRenderer", methodName : "guessDisplay"});
+				haxe.Log.trace("Is this a function: " + field.type,{ fileName : "AbstractRenderer.hx", lineNumber : 56, className : "autoform.AbstractRenderer", methodName : "guessDisplay"});
 				$r = "text";
 				return $r;
 			}($this));
@@ -2312,10 +2312,10 @@ autoform.ui.TextArea = function(field) {
 	if( field === $_ ) return;
 	autoform.AbstractField.call(this,"div");
 	domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.addClass(this,"af-field-container"),field.id);
-	domtools.QueryElementManipulation.setInnerHTML(this,"<label></label><textarea />");
+	domtools.QueryElementManipulation.setInnerHTML(this,"<label></label><textarea></textarea><span />");
 	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.setAttr(domtools.QueryTraversing.find(this,"textarea"),"id",field.fullID),".input"),"placeholder",field.placeholder);
 	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setText(domtools.QueryTraversing.find(this,"label"),field.title),"for",field.fullID);
-	if(field.description != "") domtools.QueryDOMManipulation.append(domtools.QueryTraversing.find(this,"label"),domtools.ElementManipulation.setText(document.createElement("p"),field.description));
+	if(field.description != "") domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.setText(domtools.QueryTraversing.find(this,"span"),field.description),"help-inline");
 }
 autoform.ui.TextArea.__name__ = ["autoform","ui","TextArea"];
 autoform.ui.TextArea.__super__ = autoform.AbstractField;
@@ -2510,9 +2510,11 @@ autoform.renderer.DefaultRenderer.prototype.run = function(fields) {
 		var thisClass = String;
 		var element;
 		var display = autoform.AbstractRenderer.guessDisplay(field);
-		var classOfFieldUI = this.displays.exists(display)?this.displays.get(display):this.displays.get("text");
-		element = Type.createInstance(classOfFieldUI,[field]);
-		domtools.QueryDOMManipulation.appendTo(element,null,this.form);
+		if(display != null) {
+			var classOfFieldUI = this.displays.exists(display)?this.displays.get(display):this.displays.get("text");
+			element = Type.createInstance(classOfFieldUI,[field]);
+			domtools.QueryDOMManipulation.appendTo(element,null,this.form);
+		}
 	}
 }
 autoform.renderer.DefaultRenderer.prototype.__class__ = autoform.renderer.DefaultRenderer;

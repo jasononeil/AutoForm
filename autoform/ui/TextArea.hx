@@ -10,7 +10,7 @@ class TextArea<T> extends autoform.AbstractField<T>
 		// create a div
 		super ("div");
 		this.addClass("af-field-container").addClass(field.id);
-		this.setInnerHTML("<label></label><textarea />");
+		this.setInnerHTML("<label></label><textarea></textarea><span />");
 
 		// set up the label and field to be linked, appropriate id
 		this.find("textarea").setAttr("id",field.fullID).addClass(".input").setAttr("placeholder",field.placeholder);
@@ -19,7 +19,7 @@ class TextArea<T> extends autoform.AbstractField<T>
 		// If there is a description, add it
 		if (field.description != "")
 		{
-			this.find("label").append(Query.create("p").setText(field.description));
+			this.find("span").setText(field.description).addClass("help-inline");
 		}
 	}
 }
