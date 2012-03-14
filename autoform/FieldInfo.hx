@@ -14,6 +14,7 @@ class FieldInfo
 	public var required:Bool;
 	public var description:String;
 	public var help:String;
+	public var placeholder:String;
 
 	public var validDescription:String;
 	public var validatorString:String;
@@ -35,6 +36,7 @@ class FieldInfo
 		required = false;
 		description = "";
 		help = "";
+		placeholder = "";
 		validDescription = "";
 		validatorString = "";
 		validator = null;
@@ -92,6 +94,9 @@ class FieldInfo
     			
     			// Extract the help
     			if (Reflect.hasField(autoform,"help")) { help = autoform.field("help"); }
+    			
+    			// Extract the placeholder
+    			if (Reflect.hasField(autoform,"placeholder")) { placeholder = autoform.field("placeholder"); }
     			
     			// Extract the validatorString
     			if (Reflect.hasField(autoform,"validatorString")) { validatorString = autoform.field("validatorString"); }

@@ -13,7 +13,7 @@ class TextArea<T> extends autoform.AbstractField<T>
 		this.setInnerHTML("<label></label><textarea />");
 
 		// set up the label and field to be linked, appropriate id
-		this.find("textarea").setAttr("id",field.fullID).addClass(".input");
+		this.find("textarea").setAttr("id",field.fullID).addClass(".input").setAttr("placeholder",field.placeholder);
 		this.find("label").setText(field.title).setAttr("for",field.fullID);
 
 		// If there is a description, add it

@@ -1,11 +1,6 @@
-var $_, $hxClasses = $hxClasses || {}, $estr = function() { return js.Boot.__string_rec(this,''); }
-function $extend(from, fields) {
-	function inherit() {}; inherit.prototype = from; var proto = new inherit();
-	for (var name in fields) proto[name] = fields[name];
-	return proto;
-}
-var demo = demo || {}
-demo.Main = $hxClasses["demo.Main"] = function() { }
+$estr = function() { return js.Boot.__string_rec(this,''); }
+if(typeof demo=='undefined') demo = {}
+demo.Main = function() { }
 demo.Main.__name__ = ["demo","Main"];
 demo.Main.main = function() {
 	haxe.Log.trace = haxe.Firebug.trace;
@@ -15,124 +10,122 @@ demo.Main.run = function(e) {
 	var form = new autoform.AutoForm(demo.MySampleModel);
 	CommonJS.getHtmlDocument().body.appendChild(form.collection[0]);
 }
-demo.Main.prototype = {
-	__class__: demo.Main
-}
-var List = $hxClasses["List"] = function() {
+demo.Main.prototype.__class__ = demo.Main;
+List = function(p) {
+	if( p === $_ ) return;
 	this.length = 0;
 }
 List.__name__ = ["List"];
-List.prototype = {
-	h: null
-	,q: null
-	,length: null
-	,add: function(item) {
-		var x = [item];
-		if(this.h == null) this.h = x; else this.q[1] = x;
-		this.q = x;
-		this.length++;
+List.prototype.h = null;
+List.prototype.q = null;
+List.prototype.length = null;
+List.prototype.add = function(item) {
+	var x = [item];
+	if(this.h == null) this.h = x; else this.q[1] = x;
+	this.q = x;
+	this.length++;
+}
+List.prototype.push = function(item) {
+	var x = [item,this.h];
+	this.h = x;
+	if(this.q == null) this.q = x;
+	this.length++;
+}
+List.prototype.first = function() {
+	return this.h == null?null:this.h[0];
+}
+List.prototype.last = function() {
+	return this.q == null?null:this.q[0];
+}
+List.prototype.pop = function() {
+	if(this.h == null) return null;
+	var x = this.h[0];
+	this.h = this.h[1];
+	if(this.h == null) this.q = null;
+	this.length--;
+	return x;
+}
+List.prototype.isEmpty = function() {
+	return this.h == null;
+}
+List.prototype.clear = function() {
+	this.h = null;
+	this.q = null;
+	this.length = 0;
+}
+List.prototype.remove = function(v) {
+	var prev = null;
+	var l = this.h;
+	while(l != null) {
+		if(l[0] == v) {
+			if(prev == null) this.h = l[1]; else prev[1] = l[1];
+			if(this.q == l) this.q = prev;
+			this.length--;
+			return true;
+		}
+		prev = l;
+		l = l[1];
 	}
-	,push: function(item) {
-		var x = [item,this.h];
-		this.h = x;
-		if(this.q == null) this.q = x;
-		this.length++;
-	}
-	,first: function() {
-		return this.h == null?null:this.h[0];
-	}
-	,last: function() {
-		return this.q == null?null:this.q[0];
-	}
-	,pop: function() {
+	return false;
+}
+List.prototype.iterator = function() {
+	return { h : this.h, hasNext : function() {
+		return this.h != null;
+	}, next : function() {
 		if(this.h == null) return null;
 		var x = this.h[0];
 		this.h = this.h[1];
-		if(this.h == null) this.q = null;
-		this.length--;
 		return x;
-	}
-	,isEmpty: function() {
-		return this.h == null;
-	}
-	,clear: function() {
-		this.h = null;
-		this.q = null;
-		this.length = 0;
-	}
-	,remove: function(v) {
-		var prev = null;
-		var l = this.h;
-		while(l != null) {
-			if(l[0] == v) {
-				if(prev == null) this.h = l[1]; else prev[1] = l[1];
-				if(this.q == l) this.q = prev;
-				this.length--;
-				return true;
-			}
-			prev = l;
-			l = l[1];
-		}
-		return false;
-	}
-	,iterator: function() {
-		return { h : this.h, hasNext : function() {
-			return this.h != null;
-		}, next : function() {
-			if(this.h == null) return null;
-			var x = this.h[0];
-			this.h = this.h[1];
-			return x;
-		}};
-	}
-	,toString: function() {
-		var s = new StringBuf();
-		var first = true;
-		var l = this.h;
-		s.b[s.b.length] = "{";
-		while(l != null) {
-			if(first) first = false; else s.b[s.b.length] = ", ";
-			s.add(Std.string(l[0]));
-			l = l[1];
-		}
-		s.b[s.b.length] = "}";
-		return s.b.join("");
-	}
-	,join: function(sep) {
-		var s = new StringBuf();
-		var first = true;
-		var l = this.h;
-		while(l != null) {
-			if(first) first = false; else s.b[s.b.length] = sep == null?"null":sep;
-			s.add(l[0]);
-			l = l[1];
-		}
-		return s.b.join("");
-	}
-	,filter: function(f) {
-		var l2 = new List();
-		var l = this.h;
-		while(l != null) {
-			var v = l[0];
-			l = l[1];
-			if(f(v)) l2.add(v);
-		}
-		return l2;
-	}
-	,map: function(f) {
-		var b = new List();
-		var l = this.h;
-		while(l != null) {
-			var v = l[0];
-			l = l[1];
-			b.add(f(v));
-		}
-		return b;
-	}
-	,__class__: List
+	}};
 }
-var domtools = domtools || {}
-domtools.Query = $hxClasses["domtools.Query"] = function(selector,node,collection) {
+List.prototype.toString = function() {
+	var s = new StringBuf();
+	var first = true;
+	var l = this.h;
+	s.b[s.b.length] = "{" == null?"null":"{";
+	while(l != null) {
+		if(first) first = false; else s.b[s.b.length] = ", " == null?"null":", ";
+		s.add(Std.string(l[0]));
+		l = l[1];
+	}
+	s.b[s.b.length] = "}" == null?"null":"}";
+	return s.b.join("");
+}
+List.prototype.join = function(sep) {
+	var s = new StringBuf();
+	var first = true;
+	var l = this.h;
+	while(l != null) {
+		if(first) first = false; else s.b[s.b.length] = sep == null?"null":sep;
+		s.add(l[0]);
+		l = l[1];
+	}
+	return s.b.join("");
+}
+List.prototype.filter = function(f) {
+	var l2 = new List();
+	var l = this.h;
+	while(l != null) {
+		var v = l[0];
+		l = l[1];
+		if(f(v)) l2.add(v);
+	}
+	return l2;
+}
+List.prototype.map = function(f) {
+	var b = new List();
+	var l = this.h;
+	while(l != null) {
+		var v = l[0];
+		l = l[1];
+		b.add(f(v));
+	}
+	return b;
+}
+List.prototype.__class__ = List;
+if(typeof domtools=='undefined') domtools = {}
+domtools.Query = function(selector,node,collection) {
+	if( selector === $_ ) return;
 	if(selector == null) selector = "";
 	this.collection = new Array();
 	if(node != null) {
@@ -144,7 +137,6 @@ domtools.Query = $hxClasses["domtools.Query"] = function(selector,node,collectio
 	}
 }
 domtools.Query.__name__ = ["domtools","Query"];
-domtools.Query.__properties__ = {get_window:"get_window",get_document:"get_document"}
 domtools.Query.document = null;
 domtools.Query.window = null;
 domtools.Query.create = function(name) {
@@ -156,93 +148,91 @@ domtools.Query.get_window = function() {
 domtools.Query.get_document = function() {
 	return document;
 }
-domtools.Query.prototype = {
-	collection: null
-	,length: null
-	,iterator: function() {
-		return this.collection.iterator();
-	}
-	,getNode: function(i) {
-		if(i == null) i = 0;
-		return this.collection[i];
-	}
-	,eq: function(i) {
-		if(i == null) i = 0;
-		return new domtools.Query(null,this.collection[i]);
-	}
-	,first: function() {
-		return new domtools.Query(null,this.collection[0]);
-	}
-	,last: function() {
-		return new domtools.Query(null,this.collection[this.collection.length - 1]);
-	}
-	,add: function(node) {
-		return (function($this) {
-			var $r;
-			$this.collection.push(node);
-			$r = $this;
-			return $r;
-		}(this));
-	}
-	,addCollection: function(collection) {
-		var $it0 = collection.iterator();
-		while( $it0.hasNext() ) {
-			var node = $it0.next();
-			this.collection.push(node);
-		}
-		return this;
-	}
-	,addNodeList: function(nodeList,elementsOnly) {
-		if(elementsOnly == null) elementsOnly = true;
-		var _g1 = 0, _g = nodeList.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var node = nodeList.item(i);
-			if(elementsOnly == false || domtools.ElementManipulation.isElement(node)) {
-				this.collection.push(node);
-				this;
-			}
-		}
-		return this;
-	}
-	,removeFromCollection: function(node) {
-		return (function($this) {
-			var $r;
-			$this.collection.remove(node);
-			$r = $this;
-			return $r;
-		}(this));
-	}
-	,each: function(f) {
-		return (function($this) {
-			var $r;
-			Lambda.iter($this.collection,f);
-			$r = $this;
-			return $r;
-		}(this));
-	}
-	,filter: function(fn) {
-		return new domtools.Query(null,null,Lambda.filter(this.collection,fn));
-	}
-	,clone: function() {
-		var q = new domtools.Query();
-		var $it0 = this.collection.iterator();
-		while( $it0.hasNext() ) {
-			var node = $it0.next();
-			{
-				q.collection.push(node.cloneNode(true));
-				q;
-			}
-		}
-		return q;
-	}
-	,get_length: function() {
-		return this.collection.length;
-	}
-	,__class__: domtools.Query
-	,__properties__: {get_length:"get_length"}
+domtools.Query.prototype.collection = null;
+domtools.Query.prototype.length = null;
+domtools.Query.prototype.iterator = function() {
+	return this.collection.iterator();
 }
-domtools.AbstractCustomElement = $hxClasses["domtools.AbstractCustomElement"] = function(name) {
+domtools.Query.prototype.getNode = function(i) {
+	if(i == null) i = 0;
+	return this.collection[i];
+}
+domtools.Query.prototype.eq = function(i) {
+	if(i == null) i = 0;
+	return new domtools.Query(null,this.collection[i]);
+}
+domtools.Query.prototype.first = function() {
+	return new domtools.Query(null,this.collection[0]);
+}
+domtools.Query.prototype.last = function() {
+	return new domtools.Query(null,this.collection[this.collection.length - 1]);
+}
+domtools.Query.prototype.add = function(node) {
+	return (function($this) {
+		var $r;
+		$this.collection.push(node);
+		$r = $this;
+		return $r;
+	}(this));
+}
+domtools.Query.prototype.addCollection = function(collection) {
+	var $it0 = collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		this.collection.push(node);
+	}
+	return this;
+}
+domtools.Query.prototype.addNodeList = function(nodeList,elementsOnly) {
+	if(elementsOnly == null) elementsOnly = true;
+	var _g1 = 0, _g = nodeList.length;
+	while(_g1 < _g) {
+		var i = _g1++;
+		var node = nodeList.item(i);
+		if(elementsOnly == false || domtools.ElementManipulation.isElement(node)) {
+			this.collection.push(node);
+			this;
+		}
+	}
+	return this;
+}
+domtools.Query.prototype.removeFromCollection = function(node) {
+	return (function($this) {
+		var $r;
+		$this.collection.remove(node);
+		$r = $this;
+		return $r;
+	}(this));
+}
+domtools.Query.prototype.each = function(f) {
+	return (function($this) {
+		var $r;
+		Lambda.iter($this.collection,f);
+		$r = $this;
+		return $r;
+	}(this));
+}
+domtools.Query.prototype.filter = function(fn) {
+	return new domtools.Query(null,null,Lambda.filter(this.collection,fn));
+}
+domtools.Query.prototype.clone = function() {
+	var q = new domtools.Query();
+	var $it0 = this.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		{
+			q.collection.push(node.cloneNode(true));
+			q;
+		}
+	}
+	return q;
+}
+domtools.Query.prototype.get_length = function() {
+	return this.collection.length;
+}
+domtools.Query.prototype.__class__ = domtools.Query;
+domtools.AbstractCustomElement = function(name) {
+	if( name === $_ ) return;
 	domtools.Query.call(this);
 	var elm = document.createElement(name);
 	{
@@ -252,638 +242,37 @@ domtools.AbstractCustomElement = $hxClasses["domtools.AbstractCustomElement"] = 
 }
 domtools.AbstractCustomElement.__name__ = ["domtools","AbstractCustomElement"];
 domtools.AbstractCustomElement.__super__ = domtools.Query;
-domtools.AbstractCustomElement.prototype = $extend(domtools.Query.prototype,{
-	__class__: domtools.AbstractCustomElement
-});
-var autoform = autoform || {}
-autoform.AbstractField = $hxClasses["autoform.AbstractField"] = function(name) {
+for(var k in domtools.Query.prototype ) domtools.AbstractCustomElement.prototype[k] = domtools.Query.prototype[k];
+domtools.AbstractCustomElement.prototype.__class__ = domtools.AbstractCustomElement;
+if(typeof autoform=='undefined') autoform = {}
+autoform.AbstractField = function(name) {
+	if( name === $_ ) return;
 	domtools.AbstractCustomElement.call(this,name);
 }
 autoform.AbstractField.__name__ = ["autoform","AbstractField"];
 autoform.AbstractField.__super__ = domtools.AbstractCustomElement;
-autoform.AbstractField.prototype = $extend(domtools.AbstractCustomElement.prototype,{
-	get: function() {
-		return null;
-	}
-	,set: function(object) {
-	}
-	,__class__: autoform.AbstractField
-});
+for(var k in domtools.AbstractCustomElement.prototype ) autoform.AbstractField.prototype[k] = domtools.AbstractCustomElement.prototype[k];
+autoform.AbstractField.prototype.get = function() {
+	return null;
+}
+autoform.AbstractField.prototype.set = function(object) {
+}
+autoform.AbstractField.prototype.__class__ = autoform.AbstractField;
 if(!autoform.ui) autoform.ui = {}
-autoform.ui.TextField = $hxClasses["autoform.ui.TextField"] = function(field) {
+autoform.ui.TextField = function(field) {
+	if( field === $_ ) return;
 	autoform.AbstractField.call(this,"div");
 	domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.addClass(this,"af-field-container"),field.id);
 	domtools.QueryElementManipulation.setInnerHTML(this,"<label></label><input />");
-	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setAttr(domtools.QueryTraversing.find(this,"input"),"type","text"),"id",field.fullID);
+	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setAttr(domtools.QueryTraversing.find(this,"input"),"type","text"),"id",field.fullID),"placeholder",field.placeholder);
 	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setText(domtools.QueryTraversing.find(this,"label"),field.title),"for",field.fullID);
 	if(field.description != "") domtools.QueryDOMManipulation.append(domtools.QueryTraversing.find(this,"label"),domtools.ElementManipulation.setText(document.createElement("p"),field.description));
 }
 autoform.ui.TextField.__name__ = ["autoform","ui","TextField"];
 autoform.ui.TextField.__super__ = autoform.AbstractField;
-autoform.ui.TextField.prototype = $extend(autoform.AbstractField.prototype,{
-	__class__: autoform.ui.TextField
-});
-domtools.ElementManipulation = $hxClasses["domtools.ElementManipulation"] = function() { }
-domtools.ElementManipulation.__name__ = ["domtools","ElementManipulation"];
-domtools.ElementManipulation.isElement = function(node) {
-	return node.nodeType == domtools.ElementManipulation.NodeTypeElement;
-}
-domtools.ElementManipulation.attr = function(elm,attName) {
-	var ret = "";
-	if(domtools.ElementManipulation.isElement(elm)) {
-		var element = elm;
-		ret = element.getAttribute(attName);
-		if(ret == null) ret = "";
-	}
-	return ret;
-}
-domtools.ElementManipulation.setAttr = function(elm,attName,attValue) {
-	if(elm.nodeType == domtools.ElementManipulation.NodeTypeElement) {
-		var element = elm;
-		element.setAttribute(attName,attValue);
-	}
-	return elm;
-}
-domtools.ElementManipulation.removeAttr = function(elm,attName) {
-	if(elm.nodeType == domtools.ElementManipulation.NodeTypeElement) {
-		var element = elm;
-		element.removeAttribute(attName);
-	}
-	return elm;
-}
-domtools.ElementManipulation.hasClass = function(elm,className) {
-	return (" " + domtools.ElementManipulation.attr(elm,"class") + " ").indexOf(" " + className + " ") > -1;
-}
-domtools.ElementManipulation.addClass = function(elm,className) {
-	if(domtools.ElementManipulation.hasClass(elm,className) == false) {
-		var oldClassName = domtools.ElementManipulation.attr(elm,"class");
-		var newClassName = oldClassName == ""?className:oldClassName + " " + className;
-		domtools.ElementManipulation.setAttr(elm,"class",newClassName);
-	}
-	return elm;
-}
-domtools.ElementManipulation.removeClass = function(elm,className) {
-	var classes = domtools.ElementManipulation.attr(elm,"class").split(" ");
-	classes.remove(className);
-	var newClassValue = classes.join(" ");
-	domtools.ElementManipulation.setAttr(elm,"class",newClassValue);
-	return elm;
-}
-domtools.ElementManipulation.toggleClass = function(elm,className) {
-	if(domtools.ElementManipulation.hasClass(elm,className)) domtools.ElementManipulation.removeClass(elm,className); else domtools.ElementManipulation.addClass(elm,className);
-	return elm;
-}
-domtools.ElementManipulation.tagName = function(elm) {
-	return elm.nodeName.toLowerCase();
-}
-domtools.ElementManipulation.val = function(elm) {
-	return domtools.ElementManipulation.attr(elm,"value");
-}
-domtools.ElementManipulation.text = function(elm) {
-	return elm.textContent;
-}
-domtools.ElementManipulation.setText = function(elm,text) {
-	return (function($this) {
-		var $r;
-		elm.textContent = text;
-		$r = elm;
-		return $r;
-	}(this));
-}
-domtools.ElementManipulation.innerHTML = function(elm) {
-	var ret = "";
-	switch(elm.nodeType) {
-	case domtools.ElementManipulation.NodeTypeElement:
-		var element = elm;
-		ret = element.innerHTML;
-		break;
-	default:
-		ret = elm.textContent;
-	}
-	return ret;
-}
-domtools.ElementManipulation.setInnerHTML = function(elm,html) {
-	switch(elm.nodeType) {
-	case domtools.ElementManipulation.NodeTypeElement:
-		var element = elm;
-		element.innerHTML = html;
-		break;
-	default:
-		elm.textContent = html;
-	}
-	return elm;
-}
-domtools.ElementManipulation.clone = function(elm,deep) {
-	if(deep == null) deep = true;
-	return elm.cloneNode(deep);
-}
-domtools.ElementManipulation.prototype = {
-	__class__: domtools.ElementManipulation
-}
-domtools.QueryElementManipulation = $hxClasses["domtools.QueryElementManipulation"] = function() { }
-domtools.QueryElementManipulation.__name__ = ["domtools","QueryElementManipulation"];
-domtools.QueryElementManipulation.attr = function(query,attName) {
-	return query.collection.length > 0?domtools.ElementManipulation.attr(query.collection[0],attName):"";
-}
-domtools.QueryElementManipulation.setAttr = function(query,attName,attValue) {
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		domtools.ElementManipulation.setAttr(node,attName,attValue);
-	}
-	return query;
-}
-domtools.QueryElementManipulation.removeAttr = function(query,attName) {
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		domtools.ElementManipulation.removeAttr(node,attName);
-	}
-	return query;
-}
-domtools.QueryElementManipulation.hasClass = function(query,className) {
-	return query.collection.length > 0?domtools.ElementManipulation.hasClass(query.collection[0],className):false;
-}
-domtools.QueryElementManipulation.addClass = function(query,className) {
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		domtools.ElementManipulation.addClass(node,className);
-	}
-	return query;
-}
-domtools.QueryElementManipulation.removeClass = function(query,className) {
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		domtools.ElementManipulation.removeClass(node,className);
-	}
-	return query;
-}
-domtools.QueryElementManipulation.toggleClass = function(query,className) {
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		domtools.ElementManipulation.toggleClass(node,className);
-	}
-	return query;
-}
-domtools.QueryElementManipulation.tagName = function(query) {
-	return query.collection.length > 0?query.collection[0].nodeName.toLowerCase():"";
-}
-domtools.QueryElementManipulation.tagNames = function(query) {
-	var names = new Array();
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		names.push(node.nodeName.toLowerCase());
-	}
-	return names;
-}
-domtools.QueryElementManipulation.val = function(query) {
-	return query.collection.length > 0?domtools.ElementManipulation.attr(query.collection[0],"value"):"";
-}
-domtools.QueryElementManipulation.text = function(query) {
-	var text = "";
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		text = text + node.textContent;
-	}
-	return text;
-}
-domtools.QueryElementManipulation.setText = function(query,text) {
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		{
-			node.textContent = text;
-			node;
-		}
-	}
-	return query;
-}
-domtools.QueryElementManipulation.innerHTML = function(query) {
-	var ret = "";
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		ret += domtools.ElementManipulation.innerHTML(node);
-	}
-	return ret;
-}
-domtools.QueryElementManipulation.setInnerHTML = function(query,html) {
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		domtools.ElementManipulation.setInnerHTML(node,html);
-	}
-	return query;
-}
-domtools.QueryElementManipulation.clone = function(query,deep) {
-	if(deep == null) deep = true;
-	var newQuery = new domtools.Query();
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		{
-			newQuery.collection.push(node.cloneNode(true));
-			newQuery;
-		}
-	}
-	return newQuery;
-}
-domtools.QueryElementManipulation.prototype = {
-	__class__: domtools.QueryElementManipulation
-}
-domtools.EventManagement = $hxClasses["domtools.EventManagement"] = function() { }
-domtools.EventManagement.__name__ = ["domtools","EventManagement"];
-domtools.EventManagement.triggerHandler = function(target,event) {
-	return target;
-}
-domtools.EventManagement.on = function(target,eventType,listener) {
-	var elm = target;
-	elm.addEventListener(eventType,listener,false);
-	return target;
-}
-domtools.EventManagement.off = function(target,eventType,listener) {
-	var elm = target;
-	elm.removeEventListener(eventType,listener,false);
-	return target;
-}
-domtools.EventManagement.one = function(target,eventType,listener) {
-	var fn = null;
-	fn = function(e) {
-		listener(e);
-		target.removeEventListener(eventType,fn,false);
-	};
-	target.addEventListener(eventType,fn,false);
-	return target;
-}
-domtools.EventManagement.mousedown = function(target,listener) {
-	return domtools.EventManagement.on(target,"mousedown",listener);
-}
-domtools.EventManagement.mouseenter = function(target,listener) {
-	return domtools.EventManagement.on(target,"mouseover",listener);
-}
-domtools.EventManagement.mouseleave = function(target,listener) {
-	return domtools.EventManagement.on(target,"mouseout",listener);
-}
-domtools.EventManagement.mousemove = function(target,listener) {
-	return domtools.EventManagement.on(target,"mousemove",listener);
-}
-domtools.EventManagement.mouseout = function(target,listener) {
-	return domtools.EventManagement.on(target,"mouseout",listener);
-}
-domtools.EventManagement.mouseover = function(target,listener) {
-	return domtools.EventManagement.on(target,"mouseover",listener);
-}
-domtools.EventManagement.mouseup = function(target,listener) {
-	return domtools.EventManagement.on(target,"mouseup",listener);
-}
-domtools.EventManagement.keydown = function(target,listener) {
-	return domtools.EventManagement.on(target,"keydown",listener);
-}
-domtools.EventManagement.keypress = function(target,listener) {
-	return domtools.EventManagement.on(target,"keypress",listener);
-}
-domtools.EventManagement.keyup = function(target,listener) {
-	return domtools.EventManagement.on(target,"keyup",listener);
-}
-domtools.EventManagement.hover = function(target,listener1,listener2) {
-	domtools.EventManagement.on(target,"mouseover",listener1);
-	if(listener2 == null) domtools.EventManagement.on(target,"mouseout",listener1); else domtools.EventManagement.on(target,"mouseout",listener2);
-	return target;
-}
-domtools.EventManagement.submit = function(target,listener) {
-	return domtools.EventManagement.on(target,"submit",listener);
-}
-domtools.EventManagement.toggleClick = function(target,listenerFirstClick,listenerSecondClick) {
-	var fn1 = null;
-	var fn2 = null;
-	fn1 = function(e) {
-		listenerFirstClick(e);
-		target.removeEventListener("click",fn1,false);
-		target.addEventListener("click",fn2,false);
-	};
-	fn2 = function(e) {
-		listenerSecondClick(e);
-		target.removeEventListener("click",fn2,false);
-		target.addEventListener("click",fn1,false);
-	};
-	target.addEventListener("click",fn1,false);
-	return target;
-}
-domtools.EventManagement.blur = function(target,listener) {
-	return domtools.EventManagement.on(target,"blur",listener);
-}
-domtools.EventManagement.change = function(target,listener) {
-	return domtools.EventManagement.on(target,"change",listener);
-}
-domtools.EventManagement.click = function(target,listener) {
-	return domtools.EventManagement.on(target,"click",listener);
-}
-domtools.EventManagement.dblclick = function(target,listener) {
-	return domtools.EventManagement.on(target,"dblclick",listener);
-}
-domtools.EventManagement.focus = function(target,listener) {
-	return domtools.EventManagement.on(target,"focus",listener);
-}
-domtools.EventManagement.focusIn = function(target,listener) {
-	return domtools.EventManagement.on(target,"focusIn",listener);
-}
-domtools.EventManagement.focusOut = function(target,listener) {
-	return domtools.EventManagement.on(target,"focusOut",listener);
-}
-domtools.EventManagement.resize = function(target,listener) {
-	return domtools.EventManagement.on(target,"resize",listener);
-}
-domtools.EventManagement.scroll = function(target,listener) {
-	return domtools.EventManagement.on(target,"scroll",listener);
-}
-domtools.EventManagement.select = function(target,listener) {
-	return domtools.EventManagement.on(target,"select",listener);
-}
-domtools.EventManagement.load = function(target,listener) {
-	return domtools.EventManagement.on(target,"load",listener);
-}
-domtools.EventManagement.unload = function(target,listener) {
-	return domtools.EventManagement.on(target,"unload",listener);
-}
-domtools.EventManagement.error = function(target,listener) {
-	return domtools.EventManagement.on(target,"error",listener);
-}
-domtools.EventManagement.ready = function(target,listener) {
-	return domtools.EventManagement.on(target,"ready",listener);
-}
-domtools.EventManagement.prototype = {
-	__class__: domtools.EventManagement
-}
-domtools.QueryEventManagement = $hxClasses["domtools.QueryEventManagement"] = function() { }
-domtools.QueryEventManagement.__name__ = ["domtools","QueryEventManagement"];
-domtools.QueryEventManagement.on = function(targetCollection,eventType,listener) {
-	var $it0 = targetCollection.collection.iterator();
-	while( $it0.hasNext() ) {
-		var target = $it0.next();
-		domtools.EventManagement.on(target,eventType,listener);
-	}
-	return targetCollection;
-}
-domtools.QueryEventManagement.off = function(targetCollection,eventType,listener) {
-	var $it0 = targetCollection.collection.iterator();
-	while( $it0.hasNext() ) {
-		var target = $it0.next();
-		domtools.EventManagement.off(target,eventType,listener);
-	}
-	return targetCollection;
-}
-domtools.QueryEventManagement.one = function(targetCollection,eventType,listener) {
-	var $it0 = targetCollection.collection.iterator();
-	while( $it0.hasNext() ) {
-		var target = $it0.next();
-		domtools.EventManagement.one(target,eventType,listener);
-	}
-	return targetCollection;
-}
-domtools.QueryEventManagement.mousedown = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"mousedown",listener);
-}
-domtools.QueryEventManagement.mouseenter = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"mouseenter",listener);
-}
-domtools.QueryEventManagement.mouseleave = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"mouseleave",listener);
-}
-domtools.QueryEventManagement.mousemove = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"mousemove",listener);
-}
-domtools.QueryEventManagement.mouseout = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"mouseout",listener);
-}
-domtools.QueryEventManagement.mouseover = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"mouseover",listener);
-}
-domtools.QueryEventManagement.mouseup = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"mouseup",listener);
-}
-domtools.QueryEventManagement.keydown = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"keydown",listener);
-}
-domtools.QueryEventManagement.keypress = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"keypress",listener);
-}
-domtools.QueryEventManagement.keyup = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"keyup",listener);
-}
-domtools.QueryEventManagement.hover = function(targetCollection,listener1,listener2) {
-	var $it0 = targetCollection.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		domtools.EventManagement.hover(node,listener1,listener2);
-	}
-	return targetCollection;
-}
-domtools.QueryEventManagement.submit = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"submit",listener);
-}
-domtools.QueryEventManagement.toggleClick = function(targetCollection,listenerFirstClick,listenerSecondClick) {
-	var $it0 = targetCollection.collection.iterator();
-	while( $it0.hasNext() ) {
-		var target = $it0.next();
-		domtools.EventManagement.toggleClick(target,listenerFirstClick,listenerSecondClick);
-	}
-	return targetCollection;
-}
-domtools.QueryEventManagement.blur = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"blur",listener);
-}
-domtools.QueryEventManagement.change = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"change",listener);
-}
-domtools.QueryEventManagement.click = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"click",listener);
-}
-domtools.QueryEventManagement.dblclick = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"dblclick",listener);
-}
-domtools.QueryEventManagement.focus = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"focus",listener);
-}
-domtools.QueryEventManagement.focusIn = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"focusIn",listener);
-}
-domtools.QueryEventManagement.focusOut = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"focusOut",listener);
-}
-domtools.QueryEventManagement.resize = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"resize",listener);
-}
-domtools.QueryEventManagement.scroll = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"scroll",listener);
-}
-domtools.QueryEventManagement.select = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"select",listener);
-}
-domtools.QueryEventManagement.load = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"load",listener);
-}
-domtools.QueryEventManagement.unload = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"unload",listener);
-}
-domtools.QueryEventManagement.error = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"error",listener);
-}
-domtools.QueryEventManagement.ready = function(target,listener) {
-	return domtools.QueryEventManagement.on(target,"ready",listener);
-}
-domtools.QueryEventManagement.prototype = {
-	__class__: domtools.QueryEventManagement
-}
-domtools.DOMManipulation = $hxClasses["domtools.DOMManipulation"] = function() { }
-domtools.DOMManipulation.__name__ = ["domtools","DOMManipulation"];
-domtools.DOMManipulation.append = function(parent,childNode,childCollection) {
-	if(childNode != null) parent.appendChild(childNode); else if(childCollection != null) {
-		var $it0 = childCollection.collection.iterator();
-		while( $it0.hasNext() ) {
-			var child = $it0.next();
-			parent.appendChild(child);
-		}
-	}
-	return parent;
-}
-domtools.DOMManipulation.prepend = function(parent,newChildNode,newChildCollection) {
-	if(newChildNode != null) domtools.DOMManipulation.insertThisBefore(newChildNode,parent.firstChild); else if(newChildCollection != null) domtools.QueryDOMManipulation.insertThisBefore(newChildCollection,parent.firstChild);
-	return parent;
-}
-domtools.DOMManipulation.appendTo = function(child,parentNode,parentCollection) {
-	if(parentNode != null) domtools.DOMManipulation.append(parentNode,child); else if(parentCollection != null) domtools.QueryDOMManipulation.append(parentCollection,child);
-	return child;
-}
-domtools.DOMManipulation.prependTo = function(child,parentNode,parentCollection) {
-	return domtools.DOMManipulation.insertThisBefore(child,parentNode.firstChild,parentCollection);
-}
-domtools.DOMManipulation.insertThisBefore = function(content,targetNode,targetCollection) {
-	if(targetNode != null) targetNode.parentNode.insertBefore(content,targetNode); else if(targetCollection != null) {
-		var firstChildUsed = false;
-		var $it0 = targetCollection.collection.iterator();
-		while( $it0.hasNext() ) {
-			var target = $it0.next();
-			var childToInsert;
-			if(firstChildUsed) {
-				childToInsert = content;
-				firstChildUsed = true;
-			} else childToInsert = content.cloneNode(true);
-			target.parentNode.insertBefore(childToInsert,target);
-		}
-	}
-	return content;
-}
-domtools.DOMManipulation.insertThisAfter = function(content,targetNode,targetCollection) {
-	return domtools.DOMManipulation.insertThisBefore(content,targetNode.nextSibling,targetCollection);
-}
-domtools.DOMManipulation.beforeThisInsert = function(target,contentNode,contentQuery) {
-	if(contentNode != null) domtools.DOMManipulation.insertThisBefore(contentNode,target); else if(contentQuery != null) domtools.QueryDOMManipulation.insertThisBefore(contentQuery,target);
-	return target;
-}
-domtools.DOMManipulation.afterThisInsert = function(target,contentNode,contentQuery) {
-	if(contentNode != null) domtools.DOMManipulation.insertThisBefore(contentNode,target.nextSibling,null); else if(contentQuery != null) domtools.QueryDOMManipulation.insertThisBefore(contentQuery,target.nextSibling,domtools.QueryTraversing.next(null));
-	return target;
-}
-domtools.DOMManipulation.remove = function(childToRemove) {
-	childToRemove.parentNode.removeChild(childToRemove);
-	return childToRemove;
-}
-domtools.DOMManipulation.empty = function(container) {
-	while(container.hasChildNodes()) container.removeChild(container.firstChild);
-	return container;
-}
-domtools.DOMManipulation.prototype = {
-	__class__: domtools.DOMManipulation
-}
-domtools.QueryDOMManipulation = $hxClasses["domtools.QueryDOMManipulation"] = function() { }
-domtools.QueryDOMManipulation.__name__ = ["domtools","QueryDOMManipulation"];
-domtools.QueryDOMManipulation.append = function(parentCollection,childNode,childCollection) {
-	var firstChildUsed = false;
-	var $it0 = parentCollection.collection.iterator();
-	while( $it0.hasNext() ) {
-		var parent = $it0.next();
-		childNode = firstChildUsed || childNode == null?childNode:childNode.cloneNode(true);
-		childCollection = firstChildUsed || childCollection == null?childCollection:childCollection.clone();
-		domtools.DOMManipulation.append(parent,childNode,childCollection);
-		firstChildUsed = true;
-	}
-	return parentCollection;
-}
-domtools.QueryDOMManipulation.prepend = function(parentCollection,childNode,childCollection) {
-	var firstChildUsed = false;
-	var $it0 = parentCollection.collection.iterator();
-	while( $it0.hasNext() ) {
-		var parent = $it0.next();
-		childNode = firstChildUsed || childNode == null?childNode:childNode.cloneNode(true);
-		childCollection = firstChildUsed || childCollection == null?childCollection:childCollection.clone();
-		domtools.DOMManipulation.prepend(parent,childNode,childCollection);
-		firstChildUsed = true;
-	}
-	return parentCollection;
-}
-domtools.QueryDOMManipulation.appendTo = function(children,parentNode,parentCollection) {
-	if(parentNode != null) domtools.DOMManipulation.append(parentNode,null,children); else if(parentCollection != null) domtools.QueryDOMManipulation.append(parentCollection,null,children);
-	return children;
-}
-domtools.QueryDOMManipulation.prependTo = function(children,parentNode,parentCollection) {
-	return domtools.QueryDOMManipulation.insertThisBefore(children,parentNode.firstChild,domtools.QueryTraversing.firstChildren(parentCollection));
-}
-domtools.QueryDOMManipulation.insertThisBefore = function(content,targetNode,targetCollection) {
-	if(targetNode != null) {
-		var $it0 = content.collection.iterator();
-		while( $it0.hasNext() ) {
-			var childToAdd = $it0.next();
-			domtools.DOMManipulation.insertThisBefore(childToAdd,targetNode);
-		}
-	} else if(targetCollection != null) {
-		var firstChildUsed = false;
-		var childCollection = content;
-		var $it1 = targetCollection.collection.iterator();
-		while( $it1.hasNext() ) {
-			var target = $it1.next();
-			childCollection = firstChildUsed?childCollection:childCollection.clone();
-			domtools.QueryDOMManipulation.insertThisBefore(childCollection,target);
-			firstChildUsed = true;
-		}
-	}
-	return content;
-}
-domtools.QueryDOMManipulation.insertThisAfter = function(content,targetNode,targetCollection) {
-	return domtools.QueryDOMManipulation.insertThisBefore(content,targetNode.nextSibling,domtools.QueryTraversing.next(targetCollection));
-}
-domtools.QueryDOMManipulation.beforeThisInsert = function(target,contentNode,contentCollection) {
-	if(contentNode != null) domtools.DOMManipulation.insertThisBefore(contentNode,null,target); else if(contentCollection != null) domtools.QueryDOMManipulation.insertThisBefore(contentCollection,null,target);
-	return target;
-}
-domtools.QueryDOMManipulation.afterThisInsert = function(target,contentNode,contentCollection) {
-	if(contentNode != null) domtools.DOMManipulation.insertThisBefore(contentNode,null.nextSibling,target); else if(contentCollection != null) domtools.QueryDOMManipulation.insertThisBefore(contentCollection,null.nextSibling,domtools.QueryTraversing.next(target));
-	return target;
-}
-domtools.QueryDOMManipulation.remove = function(nodesToRemove) {
-	var $it0 = nodesToRemove.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		domtools.DOMManipulation.remove(node);
-	}
-	return nodesToRemove;
-}
-domtools.QueryDOMManipulation.empty = function(containers) {
-	var $it0 = containers.collection.iterator();
-	while( $it0.hasNext() ) {
-		var container = $it0.next();
-		while(container.hasChildNodes()) container.removeChild(container.firstChild);
-	}
-	return containers;
-}
-domtools.QueryDOMManipulation.prototype = {
-	__class__: domtools.QueryDOMManipulation
-}
-var Reflect = $hxClasses["Reflect"] = function() { }
+for(var k in autoform.AbstractField.prototype ) autoform.ui.TextField.prototype[k] = autoform.AbstractField.prototype[k];
+autoform.ui.TextField.prototype.__class__ = autoform.ui.TextField;
+Reflect = function() { }
 Reflect.__name__ = ["Reflect"];
 Reflect.hasField = function(o,field) {
 	if(o.hasOwnProperty != null) return o.hasOwnProperty(field);
@@ -905,14 +294,6 @@ Reflect.field = function(o,field) {
 }
 Reflect.setField = function(o,field,value) {
 	o[field] = value;
-}
-Reflect.getProperty = function(o,field) {
-	var tmp;
-	return o == null?null:o.__properties__ && (tmp = o.__properties__["get_" + field])?o[tmp]():o[field];
-}
-Reflect.setProperty = function(o,field,value) {
-	var tmp;
-	if(o.__properties__ && (tmp = o.__properties__["set_" + field])) o[tmp](value); else o[field] = value;
 }
 Reflect.callMethod = function(o,func,args) {
 	return func.apply(o,args);
@@ -977,10 +358,9 @@ Reflect.makeVarArgs = function(f) {
 		return f(a);
 	};
 }
-Reflect.prototype = {
-	__class__: Reflect
-}
-autoform.AbstractRenderer = $hxClasses["autoform.AbstractRenderer"] = function(form) {
+Reflect.prototype.__class__ = Reflect;
+autoform.AbstractRenderer = function(form) {
+	if( form === $_ ) return;
 	this.displays = new Hash();
 	this.form = form;
 }
@@ -1015,197 +395,35 @@ autoform.AbstractRenderer.guessDisplay = function(field) {
 	}(this));
 	return display;
 }
-autoform.AbstractRenderer.prototype = {
-	form: null
-	,displays: null
-	,run: function(fields) {
-	}
-	,__class__: autoform.AbstractRenderer
+autoform.AbstractRenderer.prototype.form = null;
+autoform.AbstractRenderer.prototype.displays = null;
+autoform.AbstractRenderer.prototype.run = function(fields) {
 }
-var IntIter = $hxClasses["IntIter"] = function(min,max) {
+autoform.AbstractRenderer.prototype.__class__ = autoform.AbstractRenderer;
+IntIter = function(min,max) {
+	if( min === $_ ) return;
 	this.min = min;
 	this.max = max;
 }
 IntIter.__name__ = ["IntIter"];
-IntIter.prototype = {
-	min: null
-	,max: null
-	,hasNext: function() {
-		return this.min < this.max;
-	}
-	,next: function() {
-		return this.min++;
-	}
-	,__class__: IntIter
+IntIter.prototype.min = null;
+IntIter.prototype.max = null;
+IntIter.prototype.hasNext = function() {
+	return this.min < this.max;
 }
-domtools.Traversing = $hxClasses["domtools.Traversing"] = function() { }
-domtools.Traversing.__name__ = ["domtools","Traversing"];
-domtools.Traversing.children = function(node,elementsOnly) {
-	if(elementsOnly == null) elementsOnly = true;
-	var children = new domtools.Query();
-	if(domtools.ElementManipulation.isElement(node)) children.addNodeList(node.childNodes,elementsOnly);
-	return children;
+IntIter.prototype.next = function() {
+	return this.min++;
 }
-domtools.Traversing.firstChildren = function(node,elementsOnly) {
-	if(elementsOnly == null) elementsOnly = true;
-	var firstChild = null;
-	if(domtools.ElementManipulation.isElement(node)) {
-		var e = node.firstChild;
-		while(elementsOnly == true && e != null && domtools.ElementManipulation.isElement(e) == false) e = e.nextSibling;
-		if(e != null) firstChild = e;
-	}
-	return firstChild;
-}
-domtools.Traversing.lastChildren = function(node,elementsOnly) {
-	if(elementsOnly == null) elementsOnly = true;
-	var lastChild = null;
-	if(domtools.ElementManipulation.isElement(node)) {
-		var e = node.lastChild;
-		while(elementsOnly == true && e != null && domtools.ElementManipulation.isElement(e) == false) e = e.previousSibling;
-		if(e != null) lastChild = e;
-	}
-	return lastChild;
-}
-domtools.Traversing.parent = function(node) {
-	return node.parentNode != null?node.parentNode:null;
-}
-domtools.Traversing.ancestors = function(node) {
-	var ancestors = new domtools.Query();
-	{
-		ancestors.collection.push(domtools.Traversing.parent(node));
-		ancestors;
-	}
-	if(ancestors.collection.length > 0) ancestors.addCollection(domtools.QueryTraversing.parent(ancestors));
-	return ancestors;
-}
-domtools.Traversing.next = function(node) {
-	return node.nextSibling != null?node.nextSibling:null;
-}
-domtools.Traversing.prev = function(node) {
-	return node.previousSibling != null?node.previousSibling:null;
-}
-domtools.Traversing.find = function(node,selector) {
-	var newQuery = new domtools.Query();
-	if(domtools.ElementManipulation.isElement(node)) {
-		var element = node;
-		newQuery.addNodeList(element.querySelectorAll(selector));
-	}
-	return newQuery;
-}
-domtools.Traversing.prototype = {
-	__class__: domtools.Traversing
-}
-domtools.QueryTraversing = $hxClasses["domtools.QueryTraversing"] = function() { }
-domtools.QueryTraversing.__name__ = ["domtools","QueryTraversing"];
-domtools.QueryTraversing.children = function(query,elementsOnly) {
-	if(elementsOnly == null) elementsOnly = true;
-	var children = new domtools.Query();
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		if(domtools.ElementManipulation.isElement(node)) children.addNodeList(node.childNodes,elementsOnly);
-	}
-	return children;
-}
-domtools.QueryTraversing.firstChildren = function(query,elementsOnly) {
-	if(elementsOnly == null) elementsOnly = true;
-	var children = new domtools.Query();
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		if(domtools.ElementManipulation.isElement(node)) {
-			var e = node.firstChild;
-			while(elementsOnly == true && e != null && domtools.ElementManipulation.isElement(e) == false) e = e.nextSibling;
-			if(e != null) {
-				children.collection.push(e);
-				children;
-			}
-		}
-	}
-	return children;
-}
-domtools.QueryTraversing.lastChildren = function(query,elementsOnly) {
-	if(elementsOnly == null) elementsOnly = true;
-	var children = new domtools.Query();
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		if(domtools.ElementManipulation.isElement(node)) {
-			var e = node.lastChild;
-			while(elementsOnly == true && e != null && domtools.ElementManipulation.isElement(e) == false) e = e.previousSibling;
-			if(e != null) {
-				children.collection.push(e);
-				children;
-			}
-		}
-	}
-	return children;
-}
-domtools.QueryTraversing.parent = function(query) {
-	var parents = new domtools.Query();
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		if(node.parentNode != null) {
-			parents.collection.push(node.parentNode);
-			parents;
-		}
-	}
-	return parents;
-}
-domtools.QueryTraversing.ancestors = function(query) {
-	var ancestors = domtools.QueryTraversing.parent(query);
-	if(ancestors.collection.length > 0) ancestors.addCollection(domtools.QueryTraversing.parent(ancestors));
-	return ancestors;
-}
-domtools.QueryTraversing.next = function(query) {
-	var siblings = new domtools.Query();
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		var sibling = node.nextSibling;
-		if(sibling != null) {
-			siblings.collection.push(sibling);
-			siblings;
-		}
-	}
-	return siblings;
-}
-domtools.QueryTraversing.prev = function(query) {
-	var siblings = new domtools.Query();
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		var sibling = node.previousSibling;
-		if(sibling != null) {
-			siblings.collection.push(sibling);
-			siblings;
-		}
-	}
-	return siblings;
-}
-domtools.QueryTraversing.find = function(query,selector) {
-	var newQuery = new domtools.Query();
-	var $it0 = query.collection.iterator();
-	while( $it0.hasNext() ) {
-		var node = $it0.next();
-		if(domtools.ElementManipulation.isElement(node)) {
-			var element = node;
-			newQuery.addNodeList(element.querySelectorAll(selector));
-		}
-	}
-	return newQuery;
-}
-domtools.QueryTraversing.prototype = {
-	__class__: domtools.QueryTraversing
-}
-autoform.FieldInfo = $hxClasses["autoform.FieldInfo"] = function(field,rtti,meta,formID_in) {
+IntIter.prototype.__class__ = IntIter;
+autoform.FieldInfo = function(field,rtti,meta,formID_in) {
+	if( field === $_ ) return;
 	this.id = "";
 	this.title = "";
 	this.type = "null";
 	this.required = false;
 	this.description = "";
 	this.help = "";
+	this.placeholder = "";
 	this.validDescription = "";
 	this.validatorString = "";
 	this.validator = null;
@@ -1238,6 +456,7 @@ autoform.FieldInfo = $hxClasses["autoform.FieldInfo"] = function(field,rtti,meta
 			if(Reflect.hasField(autoform,"required")) this.required = Reflect.field(autoform,"required");
 			if(Reflect.hasField(autoform,"description")) this.description = Reflect.field(autoform,"description");
 			if(Reflect.hasField(autoform,"help")) this.help = Reflect.field(autoform,"help");
+			if(Reflect.hasField(autoform,"placeholder")) this.placeholder = Reflect.field(autoform,"placeholder");
 			if(Reflect.hasField(autoform,"validatorString")) this.validatorString = Reflect.field(autoform,"validatorString");
 			this.validator = this.createValidatorFunction(this.validatorString);
 			if(Reflect.hasField(autoform,"display")) this.display = Reflect.field(autoform,"display");
@@ -1246,28 +465,27 @@ autoform.FieldInfo = $hxClasses["autoform.FieldInfo"] = function(field,rtti,meta
 	}
 }
 autoform.FieldInfo.__name__ = ["autoform","FieldInfo"];
-autoform.FieldInfo.prototype = {
-	id: null
-	,title: null
-	,type: null
-	,required: null
-	,description: null
-	,help: null
-	,validDescription: null
-	,validatorString: null
-	,validator: null
-	,display: null
-	,displayOptions: null
-	,formID: null
-	,formPrefix: null
-	,fullID: null
-	,createValidatorFunction: function(validatorString) {
-		var fn = null;
-		return fn;
-	}
-	,__class__: autoform.FieldInfo
+autoform.FieldInfo.prototype.id = null;
+autoform.FieldInfo.prototype.title = null;
+autoform.FieldInfo.prototype.type = null;
+autoform.FieldInfo.prototype.required = null;
+autoform.FieldInfo.prototype.description = null;
+autoform.FieldInfo.prototype.help = null;
+autoform.FieldInfo.prototype.placeholder = null;
+autoform.FieldInfo.prototype.validDescription = null;
+autoform.FieldInfo.prototype.validatorString = null;
+autoform.FieldInfo.prototype.validator = null;
+autoform.FieldInfo.prototype.display = null;
+autoform.FieldInfo.prototype.displayOptions = null;
+autoform.FieldInfo.prototype.formID = null;
+autoform.FieldInfo.prototype.formPrefix = null;
+autoform.FieldInfo.prototype.fullID = null;
+autoform.FieldInfo.prototype.createValidatorFunction = function(validatorString) {
+	var fn = null;
+	return fn;
 }
-var ValueType = $hxClasses["ValueType"] = { __ename__ : ["ValueType"], __constructs__ : ["TNull","TInt","TFloat","TBool","TObject","TFunction","TClass","TEnum","TUnknown"] }
+autoform.FieldInfo.prototype.__class__ = autoform.FieldInfo;
+ValueType = { __ename__ : ["ValueType"], __constructs__ : ["TNull","TInt","TFloat","TBool","TObject","TFunction","TClass","TEnum","TUnknown"] }
 ValueType.TNull = ["TNull",0];
 ValueType.TNull.toString = $estr;
 ValueType.TNull.__enum__ = ValueType;
@@ -1291,7 +509,7 @@ ValueType.TEnum = function(e) { var $x = ["TEnum",7,e]; $x.__enum__ = ValueType;
 ValueType.TUnknown = ["TUnknown",8];
 ValueType.TUnknown.toString = $estr;
 ValueType.TUnknown.__enum__ = ValueType;
-var Type = $hxClasses["Type"] = function() { }
+Type = function() { }
 Type.__name__ = ["Type"];
 Type.getClass = function(o) {
 	if(o == null) return null;
@@ -1314,12 +532,22 @@ Type.getEnumName = function(e) {
 	return a.join(".");
 }
 Type.resolveClass = function(name) {
-	var cl = $hxClasses[name];
+	var cl;
+	try {
+		cl = eval(name);
+	} catch( e ) {
+		cl = null;
+	}
 	if(cl == null || cl.__name__ == null) return null;
 	return cl;
 }
 Type.resolveEnum = function(name) {
-	var e = $hxClasses[name];
+	var e;
+	try {
+		e = eval(name);
+	} catch( err ) {
+		e = null;
+	}
 	if(e == null || e.__ename__ == null) return null;
 	return e;
 }
@@ -1329,8 +557,7 @@ Type.createInstance = function(cl,args) {
 	return new cl(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7]);
 }
 Type.createEmptyInstance = function(cl) {
-	function empty() {}; empty.prototype = cl.prototype;
-	return new empty();
+	return new cl($_);
 }
 Type.createEnum = function(e,constr,params) {
 	var f = Reflect.field(e,constr);
@@ -1348,17 +575,14 @@ Type.createEnumIndex = function(e,index,params) {
 	return Type.createEnum(e,c,params);
 }
 Type.getInstanceFields = function(c) {
-	var a = [];
-	for(var i in c.prototype) a.push(i);
+	var a = Reflect.fields(c.prototype);
 	a.remove("__class__");
-	a.remove("__properties__");
 	return a;
 }
 Type.getClassFields = function(c) {
 	var a = Reflect.fields(c);
 	a.remove("__name__");
 	a.remove("__interfaces__");
-	a.remove("__properties__");
 	a.remove("__super__");
 	a.remove("prototype");
 	return a;
@@ -1417,36 +641,32 @@ Type.enumParameters = function(e) {
 Type.enumIndex = function(e) {
 	return e[1];
 }
-Type.allEnums = function(e) {
-	var all = [];
-	var cst = e.__constructs__;
-	var _g = 0;
-	while(_g < cst.length) {
-		var c = cst[_g];
-		++_g;
-		var v = Reflect.field(e,c);
-		if(!Reflect.isFunction(v)) all.push(v);
-	}
-	return all;
-}
-Type.prototype = {
-	__class__: Type
-}
-var js = js || {}
-js.Boot = $hxClasses["js.Boot"] = function() { }
+Type.prototype.__class__ = Type;
+if(typeof js=='undefined') js = {}
+js.Boot = function() { }
 js.Boot.__name__ = ["js","Boot"];
 js.Boot.__unhtml = function(s) {
 	return s.split("&").join("&amp;").split("<").join("&lt;").split(">").join("&gt;");
 }
 js.Boot.__trace = function(v,i) {
 	var msg = i != null?i.fileName + ":" + i.lineNumber + ": ":"";
-	msg += js.Boot.__string_rec(v,"");
+	msg += js.Boot.__unhtml(js.Boot.__string_rec(v,"")) + "<br/>";
 	var d = document.getElementById("haxe:trace");
-	if(d != null) d.innerHTML += js.Boot.__unhtml(msg) + "<br/>"; else if(typeof(console) != "undefined" && console.log != null) console.log(msg);
+	if(d == null) alert("No haxe:trace element defined\n" + msg); else d.innerHTML += msg;
 }
 js.Boot.__clear_trace = function() {
 	var d = document.getElementById("haxe:trace");
 	if(d != null) d.innerHTML = "";
+}
+js.Boot.__closure = function(o,f) {
+	var m = o[f];
+	if(m == null) return null;
+	var f1 = function() {
+		return m.apply(o,arguments);
+	};
+	f1.scope = o;
+	f1.method = m;
+	return f1;
 }
 js.Boot.__string_rec = function(o,s) {
 	if(o == null) return "null";
@@ -1497,7 +717,7 @@ js.Boot.__string_rec = function(o,s) {
 		if(hasp && !o.hasOwnProperty(k)) {
 			continue;
 		}
-		if(k == "prototype" || k == "__class__" || k == "__super__" || k == "__interfaces__" || k == "__properties__") {
+		if(k == "prototype" || k == "__class__" || k == "__super__" || k == "__interfaces__") {
 			continue;
 		}
 		if(str.length != 2) str += ", \n";
@@ -1588,7 +808,7 @@ js.Boot.__init = function() {
 	if(String.prototype.cca == null) String.prototype.cca = String.prototype.charCodeAt;
 	String.prototype.charCodeAt = function(i) {
 		var x = this.cca(i);
-		if(x != x) return undefined;
+		if(x != x) return null;
 		return x;
 	};
 	var oldsub = String.prototype.substr;
@@ -1601,20 +821,11 @@ js.Boot.__init = function() {
 		} else if(len < 0) len = this.length + len - pos;
 		return oldsub.apply(this,[pos,len]);
 	};
-	Function.prototype["$bind"] = function(o) {
-		var f = function() {
-			return f.method.apply(f.scope,arguments);
-		};
-		f.scope = o;
-		f.method = this;
-		return f;
-	};
+	$closure = js.Boot.__closure;
 }
-js.Boot.prototype = {
-	__class__: js.Boot
-}
-var haxe = haxe || {}
-haxe.Firebug = $hxClasses["haxe.Firebug"] = function() { }
+js.Boot.prototype.__class__ = js.Boot;
+if(typeof haxe=='undefined') haxe = {}
+haxe.Firebug = function() { }
 haxe.Firebug.__name__ = ["haxe","Firebug"];
 haxe.Firebug.detect = function() {
 	try {
@@ -1643,62 +854,65 @@ haxe.Firebug.trace = function(v,inf) {
 	if(type != "warn" && type != "info" && type != "debug" && type != "error") type = inf == null?"error":"log";
 	console[type]((inf == null?"":inf.fileName + ":" + inf.lineNumber + " : ") + Std.string(v));
 }
-haxe.Firebug.prototype = {
-	__class__: haxe.Firebug
-}
-var EReg = $hxClasses["EReg"] = function(r,opt) {
+haxe.Firebug.prototype.__class__ = haxe.Firebug;
+EReg = function(r,opt) {
+	if( r === $_ ) return;
 	opt = opt.split("u").join("");
 	this.r = new RegExp(r,opt);
 }
 EReg.__name__ = ["EReg"];
-EReg.prototype = {
-	r: null
-	,match: function(s) {
-		this.r.m = this.r.exec(s);
-		this.r.s = s;
-		return this.r.m != null;
-	}
-	,matched: function(n) {
-		return this.r.m != null && n >= 0 && n < this.r.m.length?this.r.m[n]:(function($this) {
-			var $r;
-			throw "EReg::matched";
-			return $r;
-		}(this));
-	}
-	,matchedLeft: function() {
-		if(this.r.m == null) throw "No string matched";
-		return this.r.s.substr(0,this.r.m.index);
-	}
-	,matchedRight: function() {
-		if(this.r.m == null) throw "No string matched";
+EReg.prototype.r = null;
+EReg.prototype.match = function(s) {
+	this.r.m = this.r.exec(s);
+	this.r.s = s;
+	this.r.l = RegExp.leftContext;
+	this.r.r = RegExp.rightContext;
+	return this.r.m != null;
+}
+EReg.prototype.matched = function(n) {
+	return this.r.m != null && n >= 0 && n < this.r.m.length?this.r.m[n]:(function($this) {
+		var $r;
+		throw "EReg::matched";
+		return $r;
+	}(this));
+}
+EReg.prototype.matchedLeft = function() {
+	if(this.r.m == null) throw "No string matched";
+	if(this.r.l == null) return this.r.s.substr(0,this.r.m.index);
+	return this.r.l;
+}
+EReg.prototype.matchedRight = function() {
+	if(this.r.m == null) throw "No string matched";
+	if(this.r.r == null) {
 		var sz = this.r.m.index + this.r.m[0].length;
 		return this.r.s.substr(sz,this.r.s.length - sz);
 	}
-	,matchedPos: function() {
-		if(this.r.m == null) throw "No string matched";
-		return { pos : this.r.m.index, len : this.r.m[0].length};
-	}
-	,split: function(s) {
-		var d = "#__delim__#";
-		return s.replace(this.r,d).split(d);
-	}
-	,replace: function(s,by) {
-		return s.replace(this.r,by);
-	}
-	,customReplace: function(s,f) {
-		var buf = new StringBuf();
-		while(true) {
-			if(!this.match(s)) break;
-			buf.add(this.matchedLeft());
-			buf.add(f(this));
-			s = this.matchedRight();
-		}
-		buf.b[buf.b.length] = s == null?"null":s;
-		return buf.b.join("");
-	}
-	,__class__: EReg
+	return this.r.r;
 }
-var Xml = $hxClasses["Xml"] = function() {
+EReg.prototype.matchedPos = function() {
+	if(this.r.m == null) throw "No string matched";
+	return { pos : this.r.m.index, len : this.r.m[0].length};
+}
+EReg.prototype.split = function(s) {
+	var d = "#__delim__#";
+	return s.replace(this.r,d).split(d);
+}
+EReg.prototype.replace = function(s,by) {
+	return s.replace(this.r,by);
+}
+EReg.prototype.customReplace = function(s,f) {
+	var buf = new StringBuf();
+	while(true) {
+		if(!this.match(s)) break;
+		buf.add(this.matchedLeft());
+		buf.add(f(this));
+		s = this.matchedRight();
+	}
+	buf.b[buf.b.length] = s == null?"null":s;
+	return buf.b.join("");
+}
+EReg.prototype.__class__ = EReg;
+Xml = function(p) {
 }
 Xml.__name__ = ["Xml"];
 Xml.Element = null;
@@ -1858,214 +1072,991 @@ Xml.createDocument = function() {
 	r._children = new Array();
 	return r;
 }
-Xml.prototype = {
-	nodeType: null
-	,nodeName: null
-	,nodeValue: null
-	,parent: null
-	,_nodeName: null
-	,_nodeValue: null
-	,_attributes: null
-	,_children: null
-	,_parent: null
-	,getNodeName: function() {
-		if(this.nodeType != Xml.Element) throw "bad nodeType";
-		return this._nodeName;
-	}
-	,setNodeName: function(n) {
-		if(this.nodeType != Xml.Element) throw "bad nodeType";
-		return this._nodeName = n;
-	}
-	,getNodeValue: function() {
-		if(this.nodeType == Xml.Element || this.nodeType == Xml.Document) throw "bad nodeType";
-		return this._nodeValue;
-	}
-	,setNodeValue: function(v) {
-		if(this.nodeType == Xml.Element || this.nodeType == Xml.Document) throw "bad nodeType";
-		return this._nodeValue = v;
-	}
-	,getParent: function() {
-		return this._parent;
-	}
-	,get: function(att) {
-		if(this.nodeType != Xml.Element) throw "bad nodeType";
-		return this._attributes.get(att);
-	}
-	,set: function(att,value) {
-		if(this.nodeType != Xml.Element) throw "bad nodeType";
-		this._attributes.set(att,value);
-	}
-	,remove: function(att) {
-		if(this.nodeType != Xml.Element) throw "bad nodeType";
-		this._attributes.remove(att);
-	}
-	,exists: function(att) {
-		if(this.nodeType != Xml.Element) throw "bad nodeType";
-		return this._attributes.exists(att);
-	}
-	,attributes: function() {
-		if(this.nodeType != Xml.Element) throw "bad nodeType";
-		return this._attributes.keys();
-	}
-	,iterator: function() {
-		if(this._children == null) throw "bad nodetype";
-		return { cur : 0, x : this._children, hasNext : function() {
-			return this.cur < this.x.length;
-		}, next : function() {
-			return this.x[this.cur++];
-		}};
-	}
-	,elements: function() {
-		if(this._children == null) throw "bad nodetype";
-		return { cur : 0, x : this._children, hasNext : function() {
-			var k = this.cur;
-			var l = this.x.length;
-			while(k < l) {
-				if(this.x[k].nodeType == Xml.Element) break;
-				k += 1;
+Xml.prototype.nodeType = null;
+Xml.prototype.nodeName = null;
+Xml.prototype.nodeValue = null;
+Xml.prototype.parent = null;
+Xml.prototype._nodeName = null;
+Xml.prototype._nodeValue = null;
+Xml.prototype._attributes = null;
+Xml.prototype._children = null;
+Xml.prototype._parent = null;
+Xml.prototype.getNodeName = function() {
+	if(this.nodeType != Xml.Element) throw "bad nodeType";
+	return this._nodeName;
+}
+Xml.prototype.setNodeName = function(n) {
+	if(this.nodeType != Xml.Element) throw "bad nodeType";
+	return this._nodeName = n;
+}
+Xml.prototype.getNodeValue = function() {
+	if(this.nodeType == Xml.Element || this.nodeType == Xml.Document) throw "bad nodeType";
+	return this._nodeValue;
+}
+Xml.prototype.setNodeValue = function(v) {
+	if(this.nodeType == Xml.Element || this.nodeType == Xml.Document) throw "bad nodeType";
+	return this._nodeValue = v;
+}
+Xml.prototype.getParent = function() {
+	return this._parent;
+}
+Xml.prototype.get = function(att) {
+	if(this.nodeType != Xml.Element) throw "bad nodeType";
+	return this._attributes.get(att);
+}
+Xml.prototype.set = function(att,value) {
+	if(this.nodeType != Xml.Element) throw "bad nodeType";
+	this._attributes.set(att,value);
+}
+Xml.prototype.remove = function(att) {
+	if(this.nodeType != Xml.Element) throw "bad nodeType";
+	this._attributes.remove(att);
+}
+Xml.prototype.exists = function(att) {
+	if(this.nodeType != Xml.Element) throw "bad nodeType";
+	return this._attributes.exists(att);
+}
+Xml.prototype.attributes = function() {
+	if(this.nodeType != Xml.Element) throw "bad nodeType";
+	return this._attributes.keys();
+}
+Xml.prototype.iterator = function() {
+	if(this._children == null) throw "bad nodetype";
+	return { cur : 0, x : this._children, hasNext : function() {
+		return this.cur < this.x.length;
+	}, next : function() {
+		return this.x[this.cur++];
+	}};
+}
+Xml.prototype.elements = function() {
+	if(this._children == null) throw "bad nodetype";
+	return { cur : 0, x : this._children, hasNext : function() {
+		var k = this.cur;
+		var l = this.x.length;
+		while(k < l) {
+			if(this.x[k].nodeType == Xml.Element) break;
+			k += 1;
+		}
+		this.cur = k;
+		return k < l;
+	}, next : function() {
+		var k = this.cur;
+		var l = this.x.length;
+		while(k < l) {
+			var n = this.x[k];
+			k += 1;
+			if(n.nodeType == Xml.Element) {
+				this.cur = k;
+				return n;
 			}
-			this.cur = k;
-			return k < l;
-		}, next : function() {
-			var k = this.cur;
-			var l = this.x.length;
-			while(k < l) {
-				var n = this.x[k];
-				k += 1;
-				if(n.nodeType == Xml.Element) {
-					this.cur = k;
-					return n;
-				}
-			}
-			return null;
-		}};
-	}
-	,elementsNamed: function(name) {
-		if(this._children == null) throw "bad nodetype";
-		return { cur : 0, x : this._children, hasNext : function() {
-			var k = this.cur;
-			var l = this.x.length;
-			while(k < l) {
-				var n = this.x[k];
-				if(n.nodeType == Xml.Element && n._nodeName == name) break;
-				k++;
-			}
-			this.cur = k;
-			return k < l;
-		}, next : function() {
-			var k = this.cur;
-			var l = this.x.length;
-			while(k < l) {
-				var n = this.x[k];
-				k++;
-				if(n.nodeType == Xml.Element && n._nodeName == name) {
-					this.cur = k;
-					return n;
-				}
-			}
-			return null;
-		}};
-	}
-	,firstChild: function() {
-		if(this._children == null) throw "bad nodetype";
-		return this._children[0];
-	}
-	,firstElement: function() {
-		if(this._children == null) throw "bad nodetype";
-		var cur = 0;
-		var l = this._children.length;
-		while(cur < l) {
-			var n = this._children[cur];
-			if(n.nodeType == Xml.Element) return n;
-			cur++;
 		}
 		return null;
-	}
-	,addChild: function(x) {
-		if(this._children == null) throw "bad nodetype";
-		if(x._parent != null) x._parent._children.remove(x);
-		x._parent = this;
-		this._children.push(x);
-	}
-	,removeChild: function(x) {
-		if(this._children == null) throw "bad nodetype";
-		var b = this._children.remove(x);
-		if(b) x._parent = null;
-		return b;
-	}
-	,insertChild: function(x,pos) {
-		if(this._children == null) throw "bad nodetype";
-		if(x._parent != null) x._parent._children.remove(x);
-		x._parent = this;
-		this._children.insert(pos,x);
-	}
-	,toString: function() {
-		if(this.nodeType == Xml.PCData) return this._nodeValue;
-		if(this.nodeType == Xml.CData) return "<![CDATA[" + this._nodeValue + "]]>";
-		if(this.nodeType == Xml.Comment) return "<!--" + this._nodeValue + "-->";
-		if(this.nodeType == Xml.DocType) return "<!DOCTYPE " + this._nodeValue + ">";
-		if(this.nodeType == Xml.Prolog) return "<?" + this._nodeValue + "?>";
-		var s = new StringBuf();
-		if(this.nodeType == Xml.Element) {
-			s.b[s.b.length] = "<";
-			s.add(this._nodeName);
-			var $it0 = this._attributes.keys();
-			while( $it0.hasNext() ) {
-				var k = $it0.next();
-				s.b[s.b.length] = " ";
-				s.b[s.b.length] = k == null?"null":k;
-				s.b[s.b.length] = "=\"";
-				s.add(this._attributes.get(k));
-				s.b[s.b.length] = "\"";
-			}
-			if(this._children.length == 0) {
-				s.b[s.b.length] = "/>";
-				return s.b.join("");
-			}
-			s.b[s.b.length] = ">";
-		}
-		var $it1 = this.iterator();
-		while( $it1.hasNext() ) {
-			var x = $it1.next();
-			s.add(x.toString());
-		}
-		if(this.nodeType == Xml.Element) {
-			s.b[s.b.length] = "</";
-			s.add(this._nodeName);
-			s.b[s.b.length] = ">";
-		}
-		return s.b.join("");
-	}
-	,__class__: Xml
-	,__properties__: {get_parent:"getParent",set_nodeValue:"setNodeValue",get_nodeValue:"getNodeValue",set_nodeName:"setNodeName",get_nodeName:"getNodeName"}
+	}};
 }
+Xml.prototype.elementsNamed = function(name) {
+	if(this._children == null) throw "bad nodetype";
+	return { cur : 0, x : this._children, hasNext : function() {
+		var k = this.cur;
+		var l = this.x.length;
+		while(k < l) {
+			var n = this.x[k];
+			if(n.nodeType == Xml.Element && n._nodeName == name) break;
+			k++;
+		}
+		this.cur = k;
+		return k < l;
+	}, next : function() {
+		var k = this.cur;
+		var l = this.x.length;
+		while(k < l) {
+			var n = this.x[k];
+			k++;
+			if(n.nodeType == Xml.Element && n._nodeName == name) {
+				this.cur = k;
+				return n;
+			}
+		}
+		return null;
+	}};
+}
+Xml.prototype.firstChild = function() {
+	if(this._children == null) throw "bad nodetype";
+	return this._children[0];
+}
+Xml.prototype.firstElement = function() {
+	if(this._children == null) throw "bad nodetype";
+	var cur = 0;
+	var l = this._children.length;
+	while(cur < l) {
+		var n = this._children[cur];
+		if(n.nodeType == Xml.Element) return n;
+		cur++;
+	}
+	return null;
+}
+Xml.prototype.addChild = function(x) {
+	if(this._children == null) throw "bad nodetype";
+	if(x._parent != null) x._parent._children.remove(x);
+	x._parent = this;
+	this._children.push(x);
+}
+Xml.prototype.removeChild = function(x) {
+	if(this._children == null) throw "bad nodetype";
+	var b = this._children.remove(x);
+	if(b) x._parent = null;
+	return b;
+}
+Xml.prototype.insertChild = function(x,pos) {
+	if(this._children == null) throw "bad nodetype";
+	if(x._parent != null) x._parent._children.remove(x);
+	x._parent = this;
+	this._children.insert(pos,x);
+}
+Xml.prototype.toString = function() {
+	if(this.nodeType == Xml.PCData) return this._nodeValue;
+	if(this.nodeType == Xml.CData) return "<![CDATA[" + this._nodeValue + "]]>";
+	if(this.nodeType == Xml.Comment) return "<!--" + this._nodeValue + "-->";
+	if(this.nodeType == Xml.DocType) return "<!DOCTYPE " + this._nodeValue + ">";
+	if(this.nodeType == Xml.Prolog) return "<?" + this._nodeValue + "?>";
+	var s = new StringBuf();
+	if(this.nodeType == Xml.Element) {
+		s.b[s.b.length] = "<" == null?"null":"<";
+		s.add(this._nodeName);
+		var $it0 = this._attributes.keys();
+		while( $it0.hasNext() ) {
+			var k = $it0.next();
+			s.b[s.b.length] = " " == null?"null":" ";
+			s.b[s.b.length] = k == null?"null":k;
+			s.b[s.b.length] = "=\"" == null?"null":"=\"";
+			s.add(this._attributes.get(k));
+			s.b[s.b.length] = "\"" == null?"null":"\"";
+		}
+		if(this._children.length == 0) {
+			s.b[s.b.length] = "/>" == null?"null":"/>";
+			return s.b.join("");
+		}
+		s.b[s.b.length] = ">" == null?"null":">";
+	}
+	var $it1 = this.iterator();
+	while( $it1.hasNext() ) {
+		var x = $it1.next();
+		s.add(x.toString());
+	}
+	if(this.nodeType == Xml.Element) {
+		s.b[s.b.length] = "</" == null?"null":"</";
+		s.add(this._nodeName);
+		s.b[s.b.length] = ">" == null?"null":">";
+	}
+	return s.b.join("");
+}
+Xml.prototype.__class__ = Xml;
 if(!haxe.rtti) haxe.rtti = {}
-haxe.rtti.Infos = $hxClasses["haxe.rtti.Infos"] = function() { }
+haxe.rtti.Infos = function() { }
 haxe.rtti.Infos.__name__ = ["haxe","rtti","Infos"];
-haxe.rtti.Infos.prototype = {
-	__class__: haxe.rtti.Infos
+haxe.rtti.Infos.prototype.__class__ = haxe.rtti.Infos;
+domtools.Tools = function(p) {
 }
-var StringBuf = $hxClasses["StringBuf"] = function() {
+domtools.Tools.__name__ = ["domtools","Tools"];
+domtools.Tools.prototype.__class__ = domtools.Tools;
+domtools.ElementManipulation = function() { }
+domtools.ElementManipulation.__name__ = ["domtools","ElementManipulation"];
+domtools.ElementManipulation.isElement = function(node) {
+	return node.nodeType == domtools.ElementManipulation.NodeTypeElement;
+}
+domtools.ElementManipulation.attr = function(elm,attName) {
+	var ret = "";
+	if(domtools.ElementManipulation.isElement(elm)) {
+		var element = elm;
+		ret = element.getAttribute(attName);
+		if(ret == null) ret = "";
+	}
+	return ret;
+}
+domtools.ElementManipulation.setAttr = function(elm,attName,attValue) {
+	if(elm.nodeType == domtools.ElementManipulation.NodeTypeElement) {
+		var element = elm;
+		element.setAttribute(attName,attValue);
+	}
+	return elm;
+}
+domtools.ElementManipulation.removeAttr = function(elm,attName) {
+	if(elm.nodeType == domtools.ElementManipulation.NodeTypeElement) {
+		var element = elm;
+		element.removeAttribute(attName);
+	}
+	return elm;
+}
+domtools.ElementManipulation.hasClass = function(elm,className) {
+	return (" " + domtools.ElementManipulation.attr(elm,"class") + " ").indexOf(" " + className + " ") > -1;
+}
+domtools.ElementManipulation.addClass = function(elm,className) {
+	if(domtools.ElementManipulation.hasClass(elm,className) == false) {
+		var oldClassName = domtools.ElementManipulation.attr(elm,"class");
+		var newClassName = oldClassName == ""?className:oldClassName + " " + className;
+		domtools.ElementManipulation.setAttr(elm,"class",newClassName);
+	}
+	return elm;
+}
+domtools.ElementManipulation.removeClass = function(elm,className) {
+	var classes = domtools.ElementManipulation.attr(elm,"class").split(" ");
+	classes.remove(className);
+	var newClassValue = classes.join(" ");
+	domtools.ElementManipulation.setAttr(elm,"class",newClassValue);
+	return elm;
+}
+domtools.ElementManipulation.toggleClass = function(elm,className) {
+	if(domtools.ElementManipulation.hasClass(elm,className)) domtools.ElementManipulation.removeClass(elm,className); else domtools.ElementManipulation.addClass(elm,className);
+	return elm;
+}
+domtools.ElementManipulation.tagName = function(elm) {
+	return elm.nodeName.toLowerCase();
+}
+domtools.ElementManipulation.val = function(elm) {
+	return domtools.ElementManipulation.attr(elm,"value");
+}
+domtools.ElementManipulation.text = function(elm) {
+	return elm.textContent;
+}
+domtools.ElementManipulation.setText = function(elm,text) {
+	return (function($this) {
+		var $r;
+		elm.textContent = text;
+		$r = elm;
+		return $r;
+	}(this));
+}
+domtools.ElementManipulation.innerHTML = function(elm) {
+	var ret = "";
+	switch(elm.nodeType) {
+	case domtools.ElementManipulation.NodeTypeElement:
+		var element = elm;
+		ret = element.innerHTML;
+		break;
+	default:
+		ret = elm.textContent;
+	}
+	return ret;
+}
+domtools.ElementManipulation.setInnerHTML = function(elm,html) {
+	switch(elm.nodeType) {
+	case domtools.ElementManipulation.NodeTypeElement:
+		var element = elm;
+		element.innerHTML = html;
+		break;
+	default:
+		elm.textContent = html;
+	}
+	return elm;
+}
+domtools.ElementManipulation.clone = function(elm,deep) {
+	if(deep == null) deep = true;
+	return elm.cloneNode(deep);
+}
+domtools.ElementManipulation.prototype.__class__ = domtools.ElementManipulation;
+domtools.QueryElementManipulation = function() { }
+domtools.QueryElementManipulation.__name__ = ["domtools","QueryElementManipulation"];
+domtools.QueryElementManipulation.attr = function(query,attName) {
+	return query.collection.length > 0?domtools.ElementManipulation.attr(query.collection[0],attName):"";
+}
+domtools.QueryElementManipulation.setAttr = function(query,attName,attValue) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.ElementManipulation.setAttr(node,attName,attValue);
+	}
+	return query;
+}
+domtools.QueryElementManipulation.removeAttr = function(query,attName) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.ElementManipulation.removeAttr(node,attName);
+	}
+	return query;
+}
+domtools.QueryElementManipulation.hasClass = function(query,className) {
+	return query.collection.length > 0?domtools.ElementManipulation.hasClass(query.collection[0],className):false;
+}
+domtools.QueryElementManipulation.addClass = function(query,className) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.ElementManipulation.addClass(node,className);
+	}
+	return query;
+}
+domtools.QueryElementManipulation.removeClass = function(query,className) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.ElementManipulation.removeClass(node,className);
+	}
+	return query;
+}
+domtools.QueryElementManipulation.toggleClass = function(query,className) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.ElementManipulation.toggleClass(node,className);
+	}
+	return query;
+}
+domtools.QueryElementManipulation.tagName = function(query) {
+	return query.collection.length > 0?query.collection[0].nodeName.toLowerCase():"";
+}
+domtools.QueryElementManipulation.tagNames = function(query) {
+	var names = new Array();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		names.push(node.nodeName.toLowerCase());
+	}
+	return names;
+}
+domtools.QueryElementManipulation.val = function(query) {
+	return query.collection.length > 0?domtools.ElementManipulation.attr(query.collection[0],"value"):"";
+}
+domtools.QueryElementManipulation.text = function(query) {
+	var text = "";
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		text = text + node.textContent;
+	}
+	return text;
+}
+domtools.QueryElementManipulation.setText = function(query,text) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		{
+			node.textContent = text;
+			node;
+		}
+	}
+	return query;
+}
+domtools.QueryElementManipulation.innerHTML = function(query) {
+	var ret = "";
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		ret += domtools.ElementManipulation.innerHTML(node);
+	}
+	return ret;
+}
+domtools.QueryElementManipulation.setInnerHTML = function(query,html) {
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.ElementManipulation.setInnerHTML(node,html);
+	}
+	return query;
+}
+domtools.QueryElementManipulation.clone = function(query,deep) {
+	if(deep == null) deep = true;
+	var newQuery = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		{
+			newQuery.collection.push(node.cloneNode(true));
+			newQuery;
+		}
+	}
+	return newQuery;
+}
+domtools.QueryElementManipulation.prototype.__class__ = domtools.QueryElementManipulation;
+domtools.DOMManipulation = function() { }
+domtools.DOMManipulation.__name__ = ["domtools","DOMManipulation"];
+domtools.DOMManipulation.append = function(parent,childNode,childCollection) {
+	if(childNode != null) parent.appendChild(childNode); else if(childCollection != null) {
+		var $it0 = childCollection.collection.iterator();
+		while( $it0.hasNext() ) {
+			var child = $it0.next();
+			parent.appendChild(child);
+		}
+	}
+	return parent;
+}
+domtools.DOMManipulation.prepend = function(parent,newChildNode,newChildCollection) {
+	if(newChildNode != null) domtools.DOMManipulation.insertThisBefore(newChildNode,parent.firstChild); else if(newChildCollection != null) domtools.QueryDOMManipulation.insertThisBefore(newChildCollection,parent.firstChild);
+	return parent;
+}
+domtools.DOMManipulation.appendTo = function(child,parentNode,parentCollection) {
+	if(parentNode != null) domtools.DOMManipulation.append(parentNode,child); else if(parentCollection != null) domtools.QueryDOMManipulation.append(parentCollection,child);
+	return child;
+}
+domtools.DOMManipulation.prependTo = function(child,parentNode,parentCollection) {
+	return domtools.DOMManipulation.insertThisBefore(child,parentNode.firstChild,parentCollection);
+}
+domtools.DOMManipulation.insertThisBefore = function(content,targetNode,targetCollection) {
+	if(targetNode != null) targetNode.parentNode.insertBefore(content,targetNode); else if(targetCollection != null) {
+		var firstChildUsed = false;
+		var $it0 = targetCollection.collection.iterator();
+		while( $it0.hasNext() ) {
+			var target = $it0.next();
+			var childToInsert;
+			if(firstChildUsed) {
+				childToInsert = content;
+				firstChildUsed = true;
+			} else childToInsert = content.cloneNode(true);
+			target.parentNode.insertBefore(childToInsert,target);
+		}
+	}
+	return content;
+}
+domtools.DOMManipulation.insertThisAfter = function(content,targetNode,targetCollection) {
+	return domtools.DOMManipulation.insertThisBefore(content,targetNode.nextSibling,targetCollection);
+}
+domtools.DOMManipulation.beforeThisInsert = function(target,contentNode,contentQuery) {
+	if(contentNode != null) domtools.DOMManipulation.insertThisBefore(contentNode,target); else if(contentQuery != null) domtools.QueryDOMManipulation.insertThisBefore(contentQuery,target);
+	return target;
+}
+domtools.DOMManipulation.afterThisInsert = function(target,contentNode,contentQuery) {
+	if(contentNode != null) domtools.DOMManipulation.insertThisBefore(contentNode,target.nextSibling,null); else if(contentQuery != null) domtools.QueryDOMManipulation.insertThisBefore(contentQuery,target.nextSibling,domtools.QueryTraversing.next(null));
+	return target;
+}
+domtools.DOMManipulation.remove = function(childToRemove) {
+	childToRemove.parentNode.removeChild(childToRemove);
+	return childToRemove;
+}
+domtools.DOMManipulation.empty = function(container) {
+	while(container.hasChildNodes()) container.removeChild(container.firstChild);
+	return container;
+}
+domtools.DOMManipulation.prototype.__class__ = domtools.DOMManipulation;
+domtools.QueryDOMManipulation = function() { }
+domtools.QueryDOMManipulation.__name__ = ["domtools","QueryDOMManipulation"];
+domtools.QueryDOMManipulation.append = function(parentCollection,childNode,childCollection) {
+	var firstChildUsed = true;
+	var $it0 = parentCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var parent = $it0.next();
+		childNode = firstChildUsed || childNode == null?childNode:childNode.cloneNode(true);
+		childCollection = firstChildUsed || childCollection == null?childCollection:childCollection.clone();
+		domtools.DOMManipulation.append(parent,childNode,childCollection);
+		firstChildUsed = false;
+	}
+	return parentCollection;
+}
+domtools.QueryDOMManipulation.prepend = function(parentCollection,childNode,childCollection) {
+	var firstChildUsed = false;
+	var $it0 = parentCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var parent = $it0.next();
+		childNode = firstChildUsed || childNode == null?childNode:childNode.cloneNode(true);
+		childCollection = firstChildUsed || childCollection == null?childCollection:childCollection.clone();
+		domtools.DOMManipulation.prepend(parent,childNode,childCollection);
+		firstChildUsed = true;
+	}
+	return parentCollection;
+}
+domtools.QueryDOMManipulation.appendTo = function(children,parentNode,parentCollection) {
+	if(parentNode != null) domtools.DOMManipulation.append(parentNode,null,children); else if(parentCollection != null) domtools.QueryDOMManipulation.append(parentCollection,null,children);
+	return children;
+}
+domtools.QueryDOMManipulation.prependTo = function(children,parentNode,parentCollection) {
+	return domtools.QueryDOMManipulation.insertThisBefore(children,parentNode.firstChild,domtools.QueryTraversing.firstChildren(parentCollection));
+}
+domtools.QueryDOMManipulation.insertThisBefore = function(content,targetNode,targetCollection) {
+	if(targetNode != null) {
+		var $it0 = content.collection.iterator();
+		while( $it0.hasNext() ) {
+			var childToAdd = $it0.next();
+			domtools.DOMManipulation.insertThisBefore(childToAdd,targetNode);
+		}
+	} else if(targetCollection != null) {
+		var firstChildUsed = false;
+		var childCollection = content;
+		var $it1 = targetCollection.collection.iterator();
+		while( $it1.hasNext() ) {
+			var target = $it1.next();
+			childCollection = firstChildUsed?childCollection:childCollection.clone();
+			domtools.QueryDOMManipulation.insertThisBefore(childCollection,target);
+			firstChildUsed = true;
+		}
+	}
+	return content;
+}
+domtools.QueryDOMManipulation.insertThisAfter = function(content,targetNode,targetCollection) {
+	return domtools.QueryDOMManipulation.insertThisBefore(content,targetNode.nextSibling,domtools.QueryTraversing.next(targetCollection));
+}
+domtools.QueryDOMManipulation.beforeThisInsert = function(target,contentNode,contentCollection) {
+	if(contentNode != null) domtools.DOMManipulation.insertThisBefore(contentNode,null,target); else if(contentCollection != null) domtools.QueryDOMManipulation.insertThisBefore(contentCollection,null,target);
+	return target;
+}
+domtools.QueryDOMManipulation.afterThisInsert = function(target,contentNode,contentCollection) {
+	if(contentNode != null) domtools.DOMManipulation.insertThisBefore(contentNode,null.nextSibling,target); else if(contentCollection != null) domtools.QueryDOMManipulation.insertThisBefore(contentCollection,null.nextSibling,domtools.QueryTraversing.next(target));
+	return target;
+}
+domtools.QueryDOMManipulation.remove = function(nodesToRemove) {
+	var $it0 = nodesToRemove.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.DOMManipulation.remove(node);
+	}
+	return nodesToRemove;
+}
+domtools.QueryDOMManipulation.empty = function(containers) {
+	var $it0 = containers.collection.iterator();
+	while( $it0.hasNext() ) {
+		var container = $it0.next();
+		while(container.hasChildNodes()) container.removeChild(container.firstChild);
+	}
+	return containers;
+}
+domtools.QueryDOMManipulation.prototype.__class__ = domtools.QueryDOMManipulation;
+domtools.Traversing = function() { }
+domtools.Traversing.__name__ = ["domtools","Traversing"];
+domtools.Traversing.children = function(node,elementsOnly) {
+	if(elementsOnly == null) elementsOnly = true;
+	var children = new domtools.Query();
+	if(domtools.ElementManipulation.isElement(node)) children.addNodeList(node.childNodes,elementsOnly);
+	return children;
+}
+domtools.Traversing.firstChildren = function(node,elementsOnly) {
+	if(elementsOnly == null) elementsOnly = true;
+	var firstChild = null;
+	if(domtools.ElementManipulation.isElement(node)) {
+		var e = node.firstChild;
+		while(elementsOnly == true && e != null && domtools.ElementManipulation.isElement(e) == false) e = e.nextSibling;
+		if(e != null) firstChild = e;
+	}
+	return firstChild;
+}
+domtools.Traversing.lastChildren = function(node,elementsOnly) {
+	if(elementsOnly == null) elementsOnly = true;
+	var lastChild = null;
+	if(domtools.ElementManipulation.isElement(node)) {
+		var e = node.lastChild;
+		while(elementsOnly == true && e != null && domtools.ElementManipulation.isElement(e) == false) e = e.previousSibling;
+		if(e != null) lastChild = e;
+	}
+	return lastChild;
+}
+domtools.Traversing.parent = function(node) {
+	return node.parentNode != null?node.parentNode:null;
+}
+domtools.Traversing.ancestors = function(node) {
+	var ancestors = new domtools.Query();
+	{
+		ancestors.collection.push(domtools.Traversing.parent(node));
+		ancestors;
+	}
+	if(ancestors.collection.length > 0) ancestors.addCollection(domtools.QueryTraversing.parent(ancestors));
+	return ancestors;
+}
+domtools.Traversing.next = function(node) {
+	return node.nextSibling != null?node.nextSibling:null;
+}
+domtools.Traversing.prev = function(node) {
+	return node.previousSibling != null?node.previousSibling:null;
+}
+domtools.Traversing.find = function(node,selector) {
+	var newQuery = new domtools.Query();
+	if(domtools.ElementManipulation.isElement(node)) {
+		var element = node;
+		newQuery.addNodeList(element.querySelectorAll(selector));
+	}
+	return newQuery;
+}
+domtools.Traversing.prototype.__class__ = domtools.Traversing;
+domtools.QueryTraversing = function() { }
+domtools.QueryTraversing.__name__ = ["domtools","QueryTraversing"];
+domtools.QueryTraversing.children = function(query,elementsOnly) {
+	if(elementsOnly == null) elementsOnly = true;
+	var children = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		if(domtools.ElementManipulation.isElement(node)) children.addNodeList(node.childNodes,elementsOnly);
+	}
+	return children;
+}
+domtools.QueryTraversing.firstChildren = function(query,elementsOnly) {
+	if(elementsOnly == null) elementsOnly = true;
+	var children = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		if(domtools.ElementManipulation.isElement(node)) {
+			var e = node.firstChild;
+			while(elementsOnly == true && e != null && domtools.ElementManipulation.isElement(e) == false) e = e.nextSibling;
+			if(e != null) {
+				children.collection.push(e);
+				children;
+			}
+		}
+	}
+	return children;
+}
+domtools.QueryTraversing.lastChildren = function(query,elementsOnly) {
+	if(elementsOnly == null) elementsOnly = true;
+	var children = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		if(domtools.ElementManipulation.isElement(node)) {
+			var e = node.lastChild;
+			while(elementsOnly == true && e != null && domtools.ElementManipulation.isElement(e) == false) e = e.previousSibling;
+			if(e != null) {
+				children.collection.push(e);
+				children;
+			}
+		}
+	}
+	return children;
+}
+domtools.QueryTraversing.parent = function(query) {
+	var parents = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		if(node.parentNode != null) {
+			parents.collection.push(node.parentNode);
+			parents;
+		}
+	}
+	return parents;
+}
+domtools.QueryTraversing.ancestors = function(query) {
+	var ancestors = domtools.QueryTraversing.parent(query);
+	if(ancestors.collection.length > 0) ancestors.addCollection(domtools.QueryTraversing.parent(ancestors));
+	return ancestors;
+}
+domtools.QueryTraversing.next = function(query) {
+	var siblings = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		var sibling = node.nextSibling;
+		if(sibling != null) {
+			siblings.collection.push(sibling);
+			siblings;
+		}
+	}
+	return siblings;
+}
+domtools.QueryTraversing.prev = function(query) {
+	var siblings = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		var sibling = node.previousSibling;
+		if(sibling != null) {
+			siblings.collection.push(sibling);
+			siblings;
+		}
+	}
+	return siblings;
+}
+domtools.QueryTraversing.find = function(query,selector) {
+	var newQuery = new domtools.Query();
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		if(domtools.ElementManipulation.isElement(node)) {
+			var element = node;
+			newQuery.addNodeList(element.querySelectorAll(selector));
+		}
+	}
+	return newQuery;
+}
+domtools.QueryTraversing.prototype.__class__ = domtools.QueryTraversing;
+domtools.Style = function() { }
+domtools.Style.__name__ = ["domtools","Style"];
+domtools.Style.getComputedStyle = function(node) {
+	var style = null;
+	if(domtools.ElementManipulation.isElement(node)) {
+	}
+	return style;
+}
+domtools.Style.css = function(node,property) {
+	domtools.Style.getComputedStyle(node).getPropertyValue("property");
+}
+domtools.Style.setCSS = function(node,property,value) {
+	if(domtools.ElementManipulation.isElement(node)) {
+		var style = node.style;
+		style[property] = value;
+	}
+}
+domtools.Style.innerWidth = function(node) {
+	var style = domtools.Style.getComputedStyle(node);
+	if(style != null) {
+	}
+	return 0;
+}
+domtools.Style.prototype.__class__ = domtools.Style;
+domtools.QueryStyle = function() { }
+domtools.QueryStyle.__name__ = ["domtools","QueryStyle"];
+domtools.QueryStyle.setCSS = function(collection,property,value) {
+	var $it0 = collection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.Style.setCSS(node,property,value);
+	}
+}
+domtools.QueryStyle.prototype.__class__ = domtools.QueryStyle;
+domtools.EventManagement = function() { }
+domtools.EventManagement.__name__ = ["domtools","EventManagement"];
+domtools.EventManagement.triggerHandler = function(target,event) {
+	return target;
+}
+domtools.EventManagement.on = function(target,eventType,listener) {
+	var elm = target;
+	elm.addEventListener(eventType,listener,false);
+	return target;
+}
+domtools.EventManagement.off = function(target,eventType,listener) {
+	var elm = target;
+	elm.removeEventListener(eventType,listener,false);
+	return target;
+}
+domtools.EventManagement.one = function(target,eventType,listener) {
+	var fn = null;
+	fn = function(e) {
+		listener(e);
+		target.removeEventListener(eventType,fn,false);
+	};
+	target.addEventListener(eventType,fn,false);
+	return target;
+}
+domtools.EventManagement.mousedown = function(target,listener) {
+	return domtools.EventManagement.on(target,"mousedown",listener);
+}
+domtools.EventManagement.mouseenter = function(target,listener) {
+	return domtools.EventManagement.on(target,"mouseover",listener);
+}
+domtools.EventManagement.mouseleave = function(target,listener) {
+	return domtools.EventManagement.on(target,"mouseout",listener);
+}
+domtools.EventManagement.mousemove = function(target,listener) {
+	return domtools.EventManagement.on(target,"mousemove",listener);
+}
+domtools.EventManagement.mouseout = function(target,listener) {
+	return domtools.EventManagement.on(target,"mouseout",listener);
+}
+domtools.EventManagement.mouseover = function(target,listener) {
+	return domtools.EventManagement.on(target,"mouseover",listener);
+}
+domtools.EventManagement.mouseup = function(target,listener) {
+	return domtools.EventManagement.on(target,"mouseup",listener);
+}
+domtools.EventManagement.keydown = function(target,listener) {
+	return domtools.EventManagement.on(target,"keydown",listener);
+}
+domtools.EventManagement.keypress = function(target,listener) {
+	return domtools.EventManagement.on(target,"keypress",listener);
+}
+domtools.EventManagement.keyup = function(target,listener) {
+	return domtools.EventManagement.on(target,"keyup",listener);
+}
+domtools.EventManagement.hover = function(target,listener1,listener2) {
+	domtools.EventManagement.on(target,"mouseover",listener1);
+	if(listener2 == null) domtools.EventManagement.on(target,"mouseout",listener1); else domtools.EventManagement.on(target,"mouseout",listener2);
+	return target;
+}
+domtools.EventManagement.submit = function(target,listener) {
+	return domtools.EventManagement.on(target,"submit",listener);
+}
+domtools.EventManagement.toggleClick = function(target,listenerFirstClick,listenerSecondClick) {
+	var fn1 = null;
+	var fn2 = null;
+	fn1 = function(e) {
+		listenerFirstClick(e);
+		target.removeEventListener("click",fn1,false);
+		target.addEventListener("click",fn2,false);
+	};
+	fn2 = function(e) {
+		listenerSecondClick(e);
+		target.removeEventListener("click",fn2,false);
+		target.addEventListener("click",fn1,false);
+	};
+	target.addEventListener("click",fn1,false);
+	return target;
+}
+domtools.EventManagement.blur = function(target,listener) {
+	return domtools.EventManagement.on(target,"blur",listener);
+}
+domtools.EventManagement.change = function(target,listener) {
+	return domtools.EventManagement.on(target,"change",listener);
+}
+domtools.EventManagement.click = function(target,listener) {
+	return domtools.EventManagement.on(target,"click",listener);
+}
+domtools.EventManagement.dblclick = function(target,listener) {
+	return domtools.EventManagement.on(target,"dblclick",listener);
+}
+domtools.EventManagement.focus = function(target,listener) {
+	return domtools.EventManagement.on(target,"focus",listener);
+}
+domtools.EventManagement.focusIn = function(target,listener) {
+	return domtools.EventManagement.on(target,"focusIn",listener);
+}
+domtools.EventManagement.focusOut = function(target,listener) {
+	return domtools.EventManagement.on(target,"focusOut",listener);
+}
+domtools.EventManagement.resize = function(target,listener) {
+	return domtools.EventManagement.on(target,"resize",listener);
+}
+domtools.EventManagement.scroll = function(target,listener) {
+	return domtools.EventManagement.on(target,"scroll",listener);
+}
+domtools.EventManagement.select = function(target,listener) {
+	return domtools.EventManagement.on(target,"select",listener);
+}
+domtools.EventManagement.load = function(target,listener) {
+	return domtools.EventManagement.on(target,"load",listener);
+}
+domtools.EventManagement.unload = function(target,listener) {
+	return domtools.EventManagement.on(target,"unload",listener);
+}
+domtools.EventManagement.error = function(target,listener) {
+	return domtools.EventManagement.on(target,"error",listener);
+}
+domtools.EventManagement.ready = function(target,listener) {
+	return domtools.EventManagement.on(target,"ready",listener);
+}
+domtools.EventManagement.prototype.__class__ = domtools.EventManagement;
+domtools.QueryEventManagement = function() { }
+domtools.QueryEventManagement.__name__ = ["domtools","QueryEventManagement"];
+domtools.QueryEventManagement.on = function(targetCollection,eventType,listener) {
+	var $it0 = targetCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var target = $it0.next();
+		domtools.EventManagement.on(target,eventType,listener);
+	}
+	return targetCollection;
+}
+domtools.QueryEventManagement.off = function(targetCollection,eventType,listener) {
+	var $it0 = targetCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var target = $it0.next();
+		domtools.EventManagement.off(target,eventType,listener);
+	}
+	return targetCollection;
+}
+domtools.QueryEventManagement.one = function(targetCollection,eventType,listener) {
+	var $it0 = targetCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var target = $it0.next();
+		domtools.EventManagement.one(target,eventType,listener);
+	}
+	return targetCollection;
+}
+domtools.QueryEventManagement.mousedown = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mousedown",listener);
+}
+domtools.QueryEventManagement.mouseenter = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mouseenter",listener);
+}
+domtools.QueryEventManagement.mouseleave = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mouseleave",listener);
+}
+domtools.QueryEventManagement.mousemove = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mousemove",listener);
+}
+domtools.QueryEventManagement.mouseout = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mouseout",listener);
+}
+domtools.QueryEventManagement.mouseover = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mouseover",listener);
+}
+domtools.QueryEventManagement.mouseup = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"mouseup",listener);
+}
+domtools.QueryEventManagement.keydown = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"keydown",listener);
+}
+domtools.QueryEventManagement.keypress = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"keypress",listener);
+}
+domtools.QueryEventManagement.keyup = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"keyup",listener);
+}
+domtools.QueryEventManagement.hover = function(targetCollection,listener1,listener2) {
+	var $it0 = targetCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.EventManagement.hover(node,listener1,listener2);
+	}
+	return targetCollection;
+}
+domtools.QueryEventManagement.submit = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"submit",listener);
+}
+domtools.QueryEventManagement.toggleClick = function(targetCollection,listenerFirstClick,listenerSecondClick) {
+	var $it0 = targetCollection.collection.iterator();
+	while( $it0.hasNext() ) {
+		var target = $it0.next();
+		domtools.EventManagement.toggleClick(target,listenerFirstClick,listenerSecondClick);
+	}
+	return targetCollection;
+}
+domtools.QueryEventManagement.blur = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"blur",listener);
+}
+domtools.QueryEventManagement.change = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"change",listener);
+}
+domtools.QueryEventManagement.click = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"click",listener);
+}
+domtools.QueryEventManagement.dblclick = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"dblclick",listener);
+}
+domtools.QueryEventManagement.focus = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"focus",listener);
+}
+domtools.QueryEventManagement.focusIn = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"focusIn",listener);
+}
+domtools.QueryEventManagement.focusOut = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"focusOut",listener);
+}
+domtools.QueryEventManagement.resize = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"resize",listener);
+}
+domtools.QueryEventManagement.scroll = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"scroll",listener);
+}
+domtools.QueryEventManagement.select = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"select",listener);
+}
+domtools.QueryEventManagement.load = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"load",listener);
+}
+domtools.QueryEventManagement.unload = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"unload",listener);
+}
+domtools.QueryEventManagement.error = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"error",listener);
+}
+domtools.QueryEventManagement.ready = function(target,listener) {
+	return domtools.QueryEventManagement.on(target,"ready",listener);
+}
+domtools.QueryEventManagement.prototype.__class__ = domtools.QueryEventManagement;
+StringBuf = function(p) {
+	if( p === $_ ) return;
 	this.b = new Array();
 }
 StringBuf.__name__ = ["StringBuf"];
-StringBuf.prototype = {
-	add: function(x) {
-		this.b[this.b.length] = x == null?"null":x;
-	}
-	,addSub: function(s,pos,len) {
-		this.b[this.b.length] = s.substr(pos,len);
-	}
-	,addChar: function(c) {
-		this.b[this.b.length] = String.fromCharCode(c);
-	}
-	,toString: function() {
-		return this.b.join("");
-	}
-	,b: null
-	,__class__: StringBuf
+StringBuf.prototype.add = function(x) {
+	this.b[this.b.length] = x == null?"null":x;
 }
-var CommonJS = $hxClasses["CommonJS"] = function() { }
+StringBuf.prototype.addSub = function(s,pos,len) {
+	this.b[this.b.length] = s.substr(pos,len);
+}
+StringBuf.prototype.addChar = function(c) {
+	this.b[this.b.length] = String.fromCharCode(c);
+}
+StringBuf.prototype.toString = function() {
+	return this.b.join("");
+}
+StringBuf.prototype.b = null;
+StringBuf.prototype.__class__ = StringBuf;
+CommonJS = function() { }
 CommonJS.__name__ = ["CommonJS"];
 CommonJS.getWindow = function() {
 	var window = window;
@@ -2127,24 +2118,20 @@ CommonJS.setStyle = function(domSelection,cssStyle,value) {
 		element.style[cssStyle] = value;
 	}
 }
-CommonJS.prototype = {
-	__class__: CommonJS
-}
-demo.MySampleModel = $hxClasses["demo.MySampleModel"] = function() { }
+CommonJS.prototype.__class__ = CommonJS;
+demo.MySampleModel = function() { }
 demo.MySampleModel.__name__ = ["demo","MySampleModel"];
+demo.MySampleModel.prototype.id = null;
+demo.MySampleModel.prototype.name = null;
+demo.MySampleModel.prototype.email = null;
+demo.MySampleModel.prototype.description = null;
+demo.MySampleModel.prototype.nicknames = null;
+demo.MySampleModel.prototype.state = null;
+demo.MySampleModel.prototype.isCool = null;
+demo.MySampleModel.prototype.birthday = null;
+demo.MySampleModel.prototype.__class__ = demo.MySampleModel;
 demo.MySampleModel.__interfaces__ = [haxe.rtti.Infos];
-demo.MySampleModel.prototype = {
-	id: null
-	,name: null
-	,email: null
-	,description: null
-	,nicknames: null
-	,state: null
-	,isCool: null
-	,birthday: null
-	,__class__: demo.MySampleModel
-}
-demo.State = $hxClasses["demo.State"] = { __ename__ : ["demo","State"], __constructs__ : ["wa","sa","nt","qld","nsw","act","vic","tas"] }
+demo.State = { __ename__ : ["demo","State"], __constructs__ : ["wa","sa","nt","qld","nsw","act","vic","tas"] }
 demo.State.wa = ["wa",0];
 demo.State.wa.toString = $estr;
 demo.State.wa.__enum__ = demo.State;
@@ -2169,7 +2156,7 @@ demo.State.vic.__enum__ = demo.State;
 demo.State.tas = ["tas",7];
 demo.State.tas.toString = $estr;
 demo.State.tas.__enum__ = demo.State;
-var Lambda = $hxClasses["Lambda"] = function() { }
+Lambda = function() { }
 Lambda.__name__ = ["Lambda"];
 Lambda.array = function(it) {
 	var a = new Array();
@@ -2308,10 +2295,9 @@ Lambda.concat = function(a,b) {
 	}
 	return l;
 }
-Lambda.prototype = {
-	__class__: Lambda
-}
-autoform.ui.TextArea = $hxClasses["autoform.ui.TextArea"] = function(field) {
+Lambda.prototype.__class__ = Lambda;
+autoform.ui.TextArea = function(field) {
+	if( field === $_ ) return;
 	autoform.AbstractField.call(this,"div");
 	domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.addClass(this,"af-field-container"),field.id);
 	domtools.QueryElementManipulation.setInnerHTML(this,"<label></label><textarea />");
@@ -2321,10 +2307,9 @@ autoform.ui.TextArea = $hxClasses["autoform.ui.TextArea"] = function(field) {
 }
 autoform.ui.TextArea.__name__ = ["autoform","ui","TextArea"];
 autoform.ui.TextArea.__super__ = autoform.AbstractField;
-autoform.ui.TextArea.prototype = $extend(autoform.AbstractField.prototype,{
-	__class__: autoform.ui.TextArea
-});
-haxe.rtti.Meta = $hxClasses["haxe.rtti.Meta"] = function() { }
+for(var k in autoform.AbstractField.prototype ) autoform.ui.TextArea.prototype[k] = autoform.AbstractField.prototype[k];
+autoform.ui.TextArea.prototype.__class__ = autoform.ui.TextArea;
+haxe.rtti.Meta = function() { }
 haxe.rtti.Meta.__name__ = ["haxe","rtti","Meta"];
 haxe.rtti.Meta.getType = function(t) {
 	var meta = t.__meta__;
@@ -2338,77 +2323,75 @@ haxe.rtti.Meta.getFields = function(t) {
 	var meta = t.__meta__;
 	return meta == null || meta.fields == null?{ }:meta.fields;
 }
-haxe.rtti.Meta.prototype = {
-	__class__: haxe.rtti.Meta
-}
-autoform.AutoForm = $hxClasses["autoform.AutoForm"] = function(c,formID) {
+haxe.rtti.Meta.prototype.__class__ = haxe.rtti.Meta;
+autoform.AutoForm = function(c,formID) {
+	if( c === $_ ) return;
 	domtools.AbstractCustomElement.call(this,"form");
 	if(formID == null) {
 		autoform.AutoForm.formIDIncrement = autoform.AutoForm.formIDIncrement + 1;
 		formID = "af-" + autoform.AutoForm.formIDIncrement;
 	}
-	haxe.Log.trace(formID,{ fileName : "AutoForm.hx", lineNumber : 29, className : "autoform.AutoForm", methodName : "new"});
+	haxe.Log.trace(formID,{ fileName : "AutoForm.hx", lineNumber : 28, className : "autoform.AutoForm", methodName : "new"});
 	this.fields = new Array();
 	this.classval = c;
 	var rttiString = c.__rtti;
 	var rtti = Xml.parse(rttiString).firstElement();
 	this.meta = haxe.rtti.Meta.getFields(c);
-	haxe.Log.trace(rtti.toString(),{ fileName : "AutoForm.hx", lineNumber : 38, className : "autoform.AutoForm", methodName : "new"});
+	haxe.Log.trace(rtti.toString(),{ fileName : "AutoForm.hx", lineNumber : 37, className : "autoform.AutoForm", methodName : "new"});
 	var fieldsXml = rtti.elements();
 	while( fieldsXml.hasNext() ) {
 		var field = fieldsXml.next();
 		if(field.getNodeName() != "implements") {
-			haxe.Log.trace(field,{ fileName : "AutoForm.hx", lineNumber : 46, className : "autoform.AutoForm", methodName : "new"});
+			haxe.Log.trace(field,{ fileName : "AutoForm.hx", lineNumber : 45, className : "autoform.AutoForm", methodName : "new"});
 			this.fields.push(new autoform.FieldInfo(field,rtti,this.meta,formID));
-		} else haxe.Log.trace("gotcha",{ fileName : "AutoForm.hx", lineNumber : 50, className : "autoform.AutoForm", methodName : "new"});
+		} else haxe.Log.trace("gotcha",{ fileName : "AutoForm.hx", lineNumber : 49, className : "autoform.AutoForm", methodName : "new"});
 	}
 	var renderer = new autoform.renderer.DefaultRenderer(this);
 	renderer.run(this.fields);
 }
 autoform.AutoForm.__name__ = ["autoform","AutoForm"];
 autoform.AutoForm.__super__ = domtools.AbstractCustomElement;
-autoform.AutoForm.prototype = $extend(domtools.AbstractCustomElement.prototype,{
-	classval: null
-	,rtti: null
-	,meta: null
-	,fields: null
-	,populateForm: function(object) {
-	}
-	,readForm: function() {
-		var object = Type.createEmptyInstance(this.classval);
-		return object;
-	}
-	,__class__: autoform.AutoForm
-});
-autoform.ui.CheckBox = $hxClasses["autoform.ui.CheckBox"] = function(field) {
+for(var k in domtools.AbstractCustomElement.prototype ) autoform.AutoForm.prototype[k] = domtools.AbstractCustomElement.prototype[k];
+autoform.AutoForm.prototype.classval = null;
+autoform.AutoForm.prototype.rtti = null;
+autoform.AutoForm.prototype.meta = null;
+autoform.AutoForm.prototype.fields = null;
+autoform.AutoForm.prototype.populateForm = function(object) {
+}
+autoform.AutoForm.prototype.readForm = function() {
+	var object = Type.createEmptyInstance(this.classval);
+	return object;
+}
+autoform.AutoForm.prototype.__class__ = autoform.AutoForm;
+autoform.ui.CheckBox = function(field) {
+	if( field === $_ ) return;
 	autoform.AbstractField.call(this,"div");
 	domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.addClass(this,"af-field-container"),field.id);
 	domtools.QueryElementManipulation.setInnerHTML(this,"<div><input /><label></label></div>");
 	domtools.QueryElementManipulation.addClass(domtools.QueryTraversing.find(this,"div"),"checkbox");
 	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setAttr(domtools.QueryTraversing.find(this,"input"),"type","checkbox"),"id",field.fullID);
 	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setText(domtools.QueryTraversing.find(this,"label"),field.title),"for",field.fullID);
-	haxe.Log.trace(field.description,{ fileName : "CheckBox.hx", lineNumber : 24, className : "autoform.ui.CheckBox", methodName : "new"});
+	haxe.Log.trace(field.description,{ fileName : "CheckBox.hx", lineNumber : 21, className : "autoform.ui.CheckBox", methodName : "new"});
 	if(field.description != "") {
-		haxe.Log.trace("hey?",{ fileName : "CheckBox.hx", lineNumber : 27, className : "autoform.ui.CheckBox", methodName : "new"});
+		haxe.Log.trace("hey?",{ fileName : "CheckBox.hx", lineNumber : 24, className : "autoform.ui.CheckBox", methodName : "new"});
 		domtools.QueryDOMManipulation.prepend(this,domtools.ElementManipulation.setText(document.createElement("p"),field.description));
 	}
 }
 autoform.ui.CheckBox.__name__ = ["autoform","ui","CheckBox"];
 autoform.ui.CheckBox.__super__ = autoform.AbstractField;
-autoform.ui.CheckBox.prototype = $extend(autoform.AbstractField.prototype,{
-	__class__: autoform.ui.CheckBox
-});
-autoform.ui.HiddenField = $hxClasses["autoform.ui.HiddenField"] = function(field) {
+for(var k in autoform.AbstractField.prototype ) autoform.ui.CheckBox.prototype[k] = autoform.AbstractField.prototype[k];
+autoform.ui.CheckBox.prototype.__class__ = autoform.ui.CheckBox;
+autoform.ui.HiddenField = function(field) {
+	if( field === $_ ) return;
 	autoform.AbstractField.call(this,"div");
 	domtools.QueryElementManipulation.addClass(domtools.QueryElementManipulation.setInnerHTML(this,"<input />"),field.id);
 	domtools.QueryElementManipulation.setAttr(domtools.QueryElementManipulation.setAttr(domtools.QueryTraversing.find(this,"input"),"type","hidden"),"id",field.fullID);
 }
 autoform.ui.HiddenField.__name__ = ["autoform","ui","HiddenField"];
 autoform.ui.HiddenField.__super__ = autoform.AbstractField;
-autoform.ui.HiddenField.prototype = $extend(autoform.AbstractField.prototype,{
-	__class__: autoform.ui.HiddenField
-});
-haxe.Log = $hxClasses["haxe.Log"] = function() { }
+for(var k in autoform.AbstractField.prototype ) autoform.ui.HiddenField.prototype[k] = autoform.AbstractField.prototype[k];
+autoform.ui.HiddenField.prototype.__class__ = autoform.ui.HiddenField;
+haxe.Log = function() { }
 haxe.Log.__name__ = ["haxe","Log"];
 haxe.Log.trace = function(v,infos) {
 	js.Boot.__trace(v,infos);
@@ -2416,10 +2399,9 @@ haxe.Log.trace = function(v,infos) {
 haxe.Log.clear = function() {
 	js.Boot.__clear_trace();
 }
-haxe.Log.prototype = {
-	__class__: haxe.Log
-}
-var Hash = $hxClasses["Hash"] = function() {
+haxe.Log.prototype.__class__ = haxe.Log;
+Hash = function(p) {
+	if( p === $_ ) return;
 	this.h = {}
 	if(this.h.__proto__ != null) {
 		this.h.__proto__ = null;
@@ -2427,58 +2409,56 @@ var Hash = $hxClasses["Hash"] = function() {
 	}
 }
 Hash.__name__ = ["Hash"];
-Hash.prototype = {
-	h: null
-	,set: function(key,value) {
-		this.h["$" + key] = value;
-	}
-	,get: function(key) {
-		return this.h["$" + key];
-	}
-	,exists: function(key) {
-		try {
-			key = "$" + key;
-			return this.hasOwnProperty.call(this.h,key);
-		} catch( e ) {
-			for(var i in this.h) if( i == key ) return true;
-			return false;
-		}
-	}
-	,remove: function(key) {
-		if(!this.exists(key)) return false;
-		delete(this.h["$" + key]);
-		return true;
-	}
-	,keys: function() {
-		var a = new Array();
-		for(var i in this.h) a.push(i.substr(1));
-		return a.iterator();
-	}
-	,iterator: function() {
-		return { ref : this.h, it : this.keys(), hasNext : function() {
-			return this.it.hasNext();
-		}, next : function() {
-			var i = this.it.next();
-			return this.ref["$" + i];
-		}};
-	}
-	,toString: function() {
-		var s = new StringBuf();
-		s.b[s.b.length] = "{";
-		var it = this.keys();
-		while( it.hasNext() ) {
-			var i = it.next();
-			s.b[s.b.length] = i == null?"null":i;
-			s.b[s.b.length] = " => ";
-			s.add(Std.string(this.get(i)));
-			if(it.hasNext()) s.b[s.b.length] = ", ";
-		}
-		s.b[s.b.length] = "}";
-		return s.b.join("");
-	}
-	,__class__: Hash
+Hash.prototype.h = null;
+Hash.prototype.set = function(key,value) {
+	this.h["$" + key] = value;
 }
-var Std = $hxClasses["Std"] = function() { }
+Hash.prototype.get = function(key) {
+	return this.h["$" + key];
+}
+Hash.prototype.exists = function(key) {
+	try {
+		key = "$" + key;
+		return this.hasOwnProperty.call(this.h,key);
+	} catch( e ) {
+		for(var i in this.h) if( i == key ) return true;
+		return false;
+	}
+}
+Hash.prototype.remove = function(key) {
+	if(!this.exists(key)) return false;
+	delete(this.h["$" + key]);
+	return true;
+}
+Hash.prototype.keys = function() {
+	var a = new Array();
+	for(var i in this.h) a.push(i.substr(1));
+	return a.iterator();
+}
+Hash.prototype.iterator = function() {
+	return { ref : this.h, it : this.keys(), hasNext : function() {
+		return this.it.hasNext();
+	}, next : function() {
+		var i = this.it.next();
+		return this.ref["$" + i];
+	}};
+}
+Hash.prototype.toString = function() {
+	var s = new StringBuf();
+	s.b[s.b.length] = "{" == null?"null":"{";
+	var it = this.keys();
+	while( it.hasNext() ) {
+		var i = it.next();
+		s.b[s.b.length] = i == null?"null":i;
+		s.b[s.b.length] = " => " == null?"null":" => ";
+		s.add(Std.string(this.get(i)));
+		if(it.hasNext()) s.b[s.b.length] = ", " == null?"null":", ";
+	}
+	s.b[s.b.length] = "}" == null?"null":"}";
+	return s.b.join("");
+}
+Hash.prototype.__class__ = Hash;
+Std = function() { }
 Std.__name__ = ["Std"];
 Std["is"] = function(v,t) {
 	return js.Boot.__instanceof(v,t);
@@ -2502,11 +2482,10 @@ Std.parseFloat = function(x) {
 Std.random = function(x) {
 	return Math.floor(Math.random() * x);
 }
-Std.prototype = {
-	__class__: Std
-}
+Std.prototype.__class__ = Std;
 if(!autoform.renderer) autoform.renderer = {}
-autoform.renderer.DefaultRenderer = $hxClasses["autoform.renderer.DefaultRenderer"] = function(form) {
+autoform.renderer.DefaultRenderer = function(form) {
+	if( form === $_ ) return;
 	autoform.AbstractRenderer.call(this,form);
 	this.displays.set("text",autoform.ui.TextField);
 	this.displays.set("textarea",autoform.ui.TextArea);
@@ -2515,23 +2494,22 @@ autoform.renderer.DefaultRenderer = $hxClasses["autoform.renderer.DefaultRendere
 }
 autoform.renderer.DefaultRenderer.__name__ = ["autoform","renderer","DefaultRenderer"];
 autoform.renderer.DefaultRenderer.__super__ = autoform.AbstractRenderer;
-autoform.renderer.DefaultRenderer.prototype = $extend(autoform.AbstractRenderer.prototype,{
-	run: function(fields) {
-		var _g = 0;
-		while(_g < fields.length) {
-			var field = fields[_g];
-			++_g;
-			var thisClass = String;
-			var element;
-			var display = autoform.AbstractRenderer.guessDisplay(field);
-			var classOfFieldUI = this.displays.exists(display)?this.displays.get(display):this.displays.get("text");
-			element = Type.createInstance(classOfFieldUI,[field]);
-			domtools.QueryDOMManipulation.appendTo(element,null,this.form);
-		}
+for(var k in autoform.AbstractRenderer.prototype ) autoform.renderer.DefaultRenderer.prototype[k] = autoform.AbstractRenderer.prototype[k];
+autoform.renderer.DefaultRenderer.prototype.run = function(fields) {
+	var _g = 0;
+	while(_g < fields.length) {
+		var field = fields[_g];
+		++_g;
+		var thisClass = String;
+		var element;
+		var display = autoform.AbstractRenderer.guessDisplay(field);
+		var classOfFieldUI = this.displays.exists(display)?this.displays.get(display):this.displays.get("text");
+		element = Type.createInstance(classOfFieldUI,[field]);
+		domtools.QueryDOMManipulation.appendTo(element,null,this.form);
 	}
-	,__class__: autoform.renderer.DefaultRenderer
-});
-js.Lib = $hxClasses["js.Lib"] = function() { }
+}
+autoform.renderer.DefaultRenderer.prototype.__class__ = autoform.renderer.DefaultRenderer;
+js.Lib = function() { }
 js.Lib.__name__ = ["js","Lib"];
 js.Lib.isIE = null;
 js.Lib.isOpera = null;
@@ -2546,10 +2524,8 @@ js.Lib.eval = function(code) {
 js.Lib.setErrorHandler = function(f) {
 	js.Lib.onerror = f;
 }
-js.Lib.prototype = {
-	__class__: js.Lib
-}
-var StringTools = $hxClasses["StringTools"] = function() { }
+js.Lib.prototype.__class__ = js.Lib;
+StringTools = function() { }
 StringTools.__name__ = ["StringTools"];
 StringTools.urlEncode = function(s) {
 	return encodeURIComponent(s);
@@ -2635,9 +2611,8 @@ StringTools.fastCodeAt = function(s,index) {
 StringTools.isEOF = function(c) {
 	return c != c;
 }
-StringTools.prototype = {
-	__class__: StringTools
-}
+StringTools.prototype.__class__ = StringTools;
+$_ = {}
 js.Boot.__res = {}
 js.Boot.__init();
 {
@@ -2666,7 +2641,6 @@ js.Boot.__init();
 	Math.NaN = Number["NaN"];
 	Math.NEGATIVE_INFINITY = Number["NEGATIVE_INFINITY"];
 	Math.POSITIVE_INFINITY = Number["POSITIVE_INFINITY"];
-	$hxClasses["Math"] = Math;
 	Math.isFinite = function(i) {
 		return isFinite(i);
 	};
@@ -2684,18 +2658,18 @@ js.Boot.__init();
 	Xml.Document = "document";
 }
 {
-	String.prototype.__class__ = $hxClasses["String"] = String;
+	String.prototype.__class__ = String;
 	String.__name__ = ["String"];
-	Array.prototype.__class__ = $hxClasses["Array"] = Array;
+	Array.prototype.__class__ = Array;
 	Array.__name__ = ["Array"];
-	Int = $hxClasses["Int"] = { __name__ : ["Int"]};
-	Dynamic = $hxClasses["Dynamic"] = { __name__ : ["Dynamic"]};
-	Float = $hxClasses["Float"] = Number;
+	Int = { __name__ : ["Int"]};
+	Dynamic = { __name__ : ["Dynamic"]};
+	Float = Number;
 	Float.__name__ = ["Float"];
-	Bool = $hxClasses["Bool"] = { __ename__ : ["Bool"]};
-	Class = $hxClasses["Class"] = { __name__ : ["Class"]};
+	Bool = { __ename__ : ["Bool"]};
+	Class = { __name__ : ["Class"]};
 	Enum = { };
-	Void = $hxClasses["Void"] = { __ename__ : ["Void"]};
+	Void = { __ename__ : ["Void"]};
 }
 {
 	js.Lib.document = document;
@@ -2748,16 +2722,13 @@ js.Boot.__init();
 		var s = date.getSeconds();
 		return date.getFullYear() + "-" + (m < 10?"0" + m:"" + m) + "-" + (d1 < 10?"0" + d1:"" + d1) + " " + (h < 10?"0" + h:"" + h) + ":" + (mi < 10?"0" + mi:"" + mi) + ":" + (s < 10?"0" + s:"" + s);
 	};
-	d.prototype.__class__ = $hxClasses["Date"] = d;
+	d.prototype.__class__ = d;
 	d.__name__ = ["Date"];
 }
-domtools.ElementManipulation.NodeTypeElement = 1;
-domtools.ElementManipulation.NodeTypeAttribute = 2;
-domtools.ElementManipulation.NodeTypeText = 3;
-Xml.enode = new EReg("^<([a-zA-Z0-9:._-]+)","");
+Xml.enode = new EReg("^<([a-zA-Z0-9:_-]+)","");
 Xml.ecdata = new EReg("^<!\\[CDATA\\[","i");
 Xml.edoctype = new EReg("^<!DOCTYPE ","i");
-Xml.eend = new EReg("^</([a-zA-Z0-9:._-]+)>","");
+Xml.eend = new EReg("^</([a-zA-Z0-9:_-]+)>","");
 Xml.epcdata = new EReg("^[^<]+","");
 Xml.ecomment = new EReg("^<!--","");
 Xml.eprolog = new EReg("^<\\?[^\\?]+\\?>","");
@@ -2766,6 +2737,9 @@ Xml.eclose = new EReg("^[ \r\n\t]*(>|(/>))","");
 Xml.ecdata_end = new EReg("\\]\\]>","");
 Xml.edoctype_elt = new EReg("[\\[|\\]>]","");
 Xml.ecomment_end = new EReg("-->","");
+domtools.ElementManipulation.NodeTypeElement = 1;
+domtools.ElementManipulation.NodeTypeAttribute = 2;
+domtools.ElementManipulation.NodeTypeText = 3;
 demo.MySampleModel.__meta__ = { fields : { id : { autoform : [{ required : true, title : "Database ID", display : "hidden"}]}, name : { autoform : [{ title : "Your name"}]}, email : { autoform : [{ title : "Your email address", description : "We promise not to send you spam!  We use your email only to help you restore your password."}]}, description : { autoform : [{ display : "textarea", description : "This will not affect your application, it is merely for statistical purposes."}]}, isCool : { autoform : [{ title : "Are you pretty cool?"}]}}};
 demo.MySampleModel.__rtti = "<class path=\"demo.MySampleModel\" params=\"\">\n\t<implements path=\"haxe.rtti.Infos\"/>\n\t<id public=\"1\"><c path=\"Int\"/></id>\n\t<name public=\"1\"><c path=\"String\"/></name>\n\t<email public=\"1\"><t path=\"Null\"><c path=\"String\"/></t></email>\n\t<description public=\"1\"><c path=\"String\"/></description>\n\t<nicknames public=\"1\"><c path=\"Array\"><c path=\"String\"/></c></nicknames>\n\t<state public=\"1\"><e path=\"demo.State\"/></state>\n\t<isCool public=\"1\"><e path=\"Bool\"/></isCool>\n\t<birthday public=\"1\"><c path=\"Date\"/></birthday>\n</class>";
 autoform.AutoForm.formIDIncrement = 0;
