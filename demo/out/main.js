@@ -388,10 +388,13 @@ autoform.AbstractRenderer.guessDisplay = function(field) {
 		case "Array<Bool>":
 			$r = "checkbox";
 			break;
+		case "function":
+			$r = null;
+			break;
 		default:
 			$r = (function($this) {
 				var $r;
-				haxe.Log.trace("Is this a function: " + field,{ fileName : "AbstractRenderer.hx", lineNumber : 53, className : "autoform.AbstractRenderer", methodName : "guessDisplay"});
+				haxe.Log.trace("Is this a function: ",{ fileName : "AbstractRenderer.hx", lineNumber : 55, className : "autoform.AbstractRenderer", methodName : "guessDisplay"});
 				$r = "text";
 				return $r;
 			}($this));
@@ -439,18 +442,22 @@ autoform.FieldInfo = function(field,rtti,meta,formID_in) {
 	this.id = field.getNodeName();
 	this.title = this.id;
 	this.fullID = this.formID + "-" + this.id;
+	haxe.Log.trace(field,{ fileName : "FieldInfo.hx", lineNumber : 60, className : "autoform.FieldInfo", methodName : "new"});
 	if(field.firstChild() != null) {
 		var firstChild = field;
-		var pathsFound = 0;
-		do {
-			firstChild = firstChild.firstChild();
-			var path = firstChild.get("path");
-			this.type = pathsFound == 0?path:this.type + "<" + path;
-			pathsFound++;
-		} while(firstChild.firstChild() != null);
-		while(pathsFound > 1) {
-			this.type = this.type + ">";
-			pathsFound--;
+		var isMethod = firstChild.exists("set") && firstChild.get("set") == "method";
+		if(isMethod) this.type = "function"; else {
+			var pathsFound = 0;
+			do {
+				firstChild = firstChild.firstChild();
+				var path = firstChild.get("path");
+				this.type = pathsFound == 0?path:this.type + "<" + path;
+				pathsFound++;
+			} while(firstChild.firstChild() != null);
+			while(pathsFound > 1) {
+				this.type = this.type + ">";
+				pathsFound--;
+			}
 		}
 	}
 	if(Reflect.hasField(meta,this.id)) {

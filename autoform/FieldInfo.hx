@@ -55,22 +55,36 @@ class FieldInfo
 		// 	<c> Class
 		//  <t> Typedef
 		//  <e> Enum
+		//  <f a="param1:param2">[<c> or <e> or <t>] for params</f>
 		//  <t path="Iterable"><c path="String"></c></t> = Iterable<String>
+		trace (field);
 		if (field.firstChild() != null)
 		{
 			var firstChild = field;
-			var pathsFound = 0;
-			do {
-				firstChild = firstChild.firstChild();
-				var path = firstChild.get("path");
-				type = (pathsFound == 0) ? path : type + "<" + path;
-				pathsFound++;
-			} while (firstChild.firstChild() != null);
-			while (pathsFound > 1)
+			var isMethod = firstChild.exists("set") && firstChild.get("set") == "method";
+			if (isMethod)
 			{
-				type = type + ">";
-				pathsFound--;
+				// for now just detect this as method.
+				// later we could possibly steal the types...
+				// or even check if this is a validator
+				type = "function";
 			}
+			else
+			{
+				var pathsFound = 0;
+				do {
+					firstChild = firstChild.firstChild();
+					var path = firstChild.get("path");
+					type = (pathsFound == 0) ? path : type + "<" + path;
+					pathsFound++;
+				} while (firstChild.firstChild() != null);
+				while (pathsFound > 1)
+				{
+					type = type + ">";
+					pathsFound--;
+				}
+			}
+				
 
 		}
 
