@@ -2516,8 +2516,70 @@ autoform.renderer.DefaultRenderer.prototype.run = function(fields) {
 			domtools.QueryDOMManipulation.appendTo(element,null,this.form);
 		}
 	}
+	var buttonGroup = domtools.ElementManipulation.addClass(document.createElement("div"),"form-actions");
+	var submit = new autoform.ui.Button("Save",true);
+	var cancel = new autoform.ui.Button("Cancel",null,autoform.ui.ButtonType.Default);
+	domtools.DOMManipulation.append(domtools.DOMManipulation.append(buttonGroup,null,submit),null,cancel);
+	domtools.DOMManipulation.appendTo(buttonGroup,null,this.form);
 }
 autoform.renderer.DefaultRenderer.prototype.__class__ = autoform.renderer.DefaultRenderer;
+autoform.ui.Button = function(text,isSubmit,type) {
+	if( text === $_ ) return;
+	if(isSubmit == null) isSubmit = false;
+	if(text == null) text = "Button";
+	domtools.AbstractCustomElement.call(this,"button");
+	domtools.QueryElementManipulation.addClass(this,"btn");
+	domtools.QueryElementManipulation.setText(this,text);
+	if(isSubmit) {
+		domtools.QueryElementManipulation.setAttr(this,"type","submit");
+		if(type == null) type = autoform.ui.ButtonType.Primary;
+		haxe.Log.trace("Type: " + type,{ fileName : "Button.hx", lineNumber : 21, className : "autoform.ui.Button", methodName : "new"});
+	}
+	if(type != null) this.setType(type);
+}
+autoform.ui.Button.__name__ = ["autoform","ui","Button"];
+autoform.ui.Button.__super__ = domtools.AbstractCustomElement;
+for(var k in domtools.AbstractCustomElement.prototype ) autoform.ui.Button.prototype[k] = domtools.AbstractCustomElement.prototype[k];
+autoform.ui.Button.prototype.type = null;
+autoform.ui.Button.prototype.setType = function(t) {
+	domtools.QueryElementManipulation.removeClass(this,this.getClassForType(this.type));
+	domtools.QueryElementManipulation.addClass(this,this.getClassForType(t));
+	return t;
+}
+autoform.ui.Button.prototype.getClassForType = function(inType) {
+	var cls = "";
+	if(inType == autoform.ui.ButtonType.Default) cls = "";
+	if(inType == autoform.ui.ButtonType.Primary) cls = "btn-primary";
+	if(inType == autoform.ui.ButtonType.Info) cls = "btn-info";
+	if(inType == autoform.ui.ButtonType.Success) cls = "btn-success";
+	if(inType == autoform.ui.ButtonType.Warning) cls = "btn-warning";
+	if(inType == autoform.ui.ButtonType.Danger) cls = "btn-danger";
+	if(inType == autoform.ui.ButtonType.Inverse) cls = "btn-inverse";
+	return cls;
+}
+autoform.ui.Button.prototype.__class__ = autoform.ui.Button;
+autoform.ui.ButtonType = { __ename__ : ["autoform","ui","ButtonType"], __constructs__ : ["Default","Primary","Info","Success","Warning","Danger","Inverse"] }
+autoform.ui.ButtonType.Default = ["Default",0];
+autoform.ui.ButtonType.Default.toString = $estr;
+autoform.ui.ButtonType.Default.__enum__ = autoform.ui.ButtonType;
+autoform.ui.ButtonType.Primary = ["Primary",1];
+autoform.ui.ButtonType.Primary.toString = $estr;
+autoform.ui.ButtonType.Primary.__enum__ = autoform.ui.ButtonType;
+autoform.ui.ButtonType.Info = ["Info",2];
+autoform.ui.ButtonType.Info.toString = $estr;
+autoform.ui.ButtonType.Info.__enum__ = autoform.ui.ButtonType;
+autoform.ui.ButtonType.Success = ["Success",3];
+autoform.ui.ButtonType.Success.toString = $estr;
+autoform.ui.ButtonType.Success.__enum__ = autoform.ui.ButtonType;
+autoform.ui.ButtonType.Warning = ["Warning",4];
+autoform.ui.ButtonType.Warning.toString = $estr;
+autoform.ui.ButtonType.Warning.__enum__ = autoform.ui.ButtonType;
+autoform.ui.ButtonType.Danger = ["Danger",5];
+autoform.ui.ButtonType.Danger.toString = $estr;
+autoform.ui.ButtonType.Danger.__enum__ = autoform.ui.ButtonType;
+autoform.ui.ButtonType.Inverse = ["Inverse",6];
+autoform.ui.ButtonType.Inverse.toString = $estr;
+autoform.ui.ButtonType.Inverse.__enum__ = autoform.ui.ButtonType;
 js.Lib = function() { }
 js.Lib.__name__ = ["js","Lib"];
 js.Lib.isIE = null;

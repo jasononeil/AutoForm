@@ -2,6 +2,7 @@ package autoform.renderer;
 using domtools.Tools;
 import autoform.ui.TextField;
 import autoform.ui.HiddenField;
+import autoform.ui.Button;
 
 class DefaultRenderer extends autoform.AbstractRenderer
 {
@@ -35,8 +36,15 @@ class DefaultRenderer extends autoform.AbstractRenderer
 
 				element.appendTo(form);
 			}
-			
 		}
+
+		// add buttons
+		var buttonGroup = domtools.Query.create("div").addClass("form-actions");
+		var submit = new Button("Save", true);
+		var cancel = new Button("Cancel", ButtonType.Default);
+
+		buttonGroup.append(submit).append(cancel);
+		buttonGroup.appendTo(form);
 	}
 
 
