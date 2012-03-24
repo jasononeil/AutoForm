@@ -17,12 +17,12 @@ class AbstractField<T> extends domtools.AbstractCustomElement
 
 	public function get():T
 	{
-		// abstract method
+		throw "Abstract Method";
 		return null;
 	}
 
 	public function set(object:T)
 	{
-		// abstract method
+		throw "Abstract Method";
 	}
 }

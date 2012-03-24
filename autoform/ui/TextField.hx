@@ -3,7 +3,7 @@ package autoform.ui;
 import domtools.Query;
 using domtools.Tools;
 
-class TextField<T> extends autoform.AbstractField<T>
+class TextField extends autoform.AbstractField<String>
 {
 	public function new(field:FieldInfo)
 	{
@@ -22,5 +22,15 @@ class TextField<T> extends autoform.AbstractField<T>
 		{
 			this.find("span").setText(field.description).addClass("help-inline");
 		}
+	}
+
+	override public function get():String
+	{
+		return this.find("input").val();
+	}
+
+	override public function set(o:String)
+	{
+		this.find("input").setVal(o);
 	}
 }

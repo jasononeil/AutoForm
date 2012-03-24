@@ -3,6 +3,7 @@ using domtools.Tools;
 import autoform.ui.TextField;
 import autoform.ui.HiddenField;
 import autoform.ui.Button;
+import autoform.AbstractField;
 
 class DefaultRenderer extends autoform.AbstractRenderer
 {
@@ -19,12 +20,12 @@ class DefaultRenderer extends autoform.AbstractRenderer
 	}
 
 	// AutoForm calls this to render.  
-	override public function run(fields:Array<FieldInfo>)
+	override public function run(fieldsInfo:Array<FieldInfo>)
 	{
-		for (field in fields)
+		for (field in fieldsInfo)
 		{
 			var thisClass = String;
-			var element:domtools.AbstractCustomElement;
+			var element:AbstractField<Dynamic>;
 			var display = autoform.AbstractRenderer.guessDisplay(field);
 			
 			// If "display" is null it's because we specifically don't
@@ -35,6 +36,7 @@ class DefaultRenderer extends autoform.AbstractRenderer
 				element = Type.createInstance(classOfFieldUI, [field]);
 
 				element.appendTo(form);
+				form.fields.set(field.id, element);
 			}
 		}
 

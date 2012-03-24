@@ -3,7 +3,7 @@ package autoform.ui;
 import domtools.Query;
 using domtools.Tools;
 
-class TextArea<T> extends autoform.AbstractField<T>
+class TextArea extends autoform.AbstractField<String>
 {
 	public function new(field:FieldInfo)
 	{
@@ -21,5 +21,15 @@ class TextArea<T> extends autoform.AbstractField<T>
 		{
 			this.find("span").setText(field.description).addClass("help-inline");
 		}
+	}
+
+	override public function get()
+	{
+		return this.find("textarea").val();
+	}
+
+	override public function set(o:String)
+	{
+		this.find("textarea").setText(o);
 	}
 }

@@ -142,6 +142,9 @@ domtools.Query.window = null;
 domtools.Query.create = function(name) {
 	return document.createElement(name);
 }
+domtools.Query.parse = function(html) {
+	return domtools.Traversing.children(domtools.ElementManipulation.setInnerHTML(document.createElement("div"),html),false);
+}
 domtools.Query.get_window = function() {
 	return window;
 }
@@ -253,9 +256,11 @@ autoform.AbstractField.__name__ = ["autoform","AbstractField"];
 autoform.AbstractField.__super__ = domtools.AbstractCustomElement;
 for(var k in domtools.AbstractCustomElement.prototype ) autoform.AbstractField.prototype[k] = domtools.AbstractCustomElement.prototype[k];
 autoform.AbstractField.prototype.get = function() {
+	throw "Abstract Method";
 	return null;
 }
 autoform.AbstractField.prototype.set = function(object) {
+	throw "Abstract Method";
 }
 autoform.AbstractField.prototype.__class__ = autoform.AbstractField;
 if(!autoform.ui) autoform.ui = {}
@@ -271,6 +276,12 @@ autoform.ui.TextField = function(field) {
 autoform.ui.TextField.__name__ = ["autoform","ui","TextField"];
 autoform.ui.TextField.__super__ = autoform.AbstractField;
 for(var k in autoform.AbstractField.prototype ) autoform.ui.TextField.prototype[k] = autoform.AbstractField.prototype[k];
+autoform.ui.TextField.prototype.get = function() {
+	return domtools.QueryElementManipulation.val(domtools.QueryTraversing.find(this,"input"));
+}
+autoform.ui.TextField.prototype.set = function(o) {
+	domtools.QueryElementManipulation.setVal(domtools.QueryTraversing.find(this,"input"),o);
+}
 autoform.ui.TextField.prototype.__class__ = autoform.ui.TextField;
 Reflect = function() { }
 Reflect.__name__ = ["Reflect"];
@@ -1324,7 +1335,17 @@ domtools.ElementManipulation.tagName = function(elm) {
 	return elm.nodeName.toLowerCase();
 }
 domtools.ElementManipulation.val = function(elm) {
-	return domtools.ElementManipulation.attr(elm,"value");
+	var val = "";
+	try {
+		val = elm.value;
+		if(val == null) val = "";
+	} catch( e ) {
+		val = domtools.ElementManipulation.attr(elm,"value");
+	}
+	return val;
+}
+domtools.ElementManipulation.setVal = function(elm,val) {
+	return domtools.ElementManipulation.setAttr(elm,"value",Std.string(val));
 }
 domtools.ElementManipulation.text = function(elm) {
 	return elm.textContent;
@@ -1426,7 +1447,16 @@ domtools.QueryElementManipulation.tagNames = function(query) {
 	return names;
 }
 domtools.QueryElementManipulation.val = function(query) {
-	return query.collection.length > 0?domtools.ElementManipulation.attr(query.collection[0],"value"):"";
+	return query.collection.length > 0?domtools.ElementManipulation.val(query.collection[0]):"";
+}
+domtools.QueryElementManipulation.setVal = function(query,val) {
+	var value = Std.string(val);
+	var $it0 = query.collection.iterator();
+	while( $it0.hasNext() ) {
+		var node = $it0.next();
+		domtools.ElementManipulation.setAttr(node,"value",Std.string(value));
+	}
+	return query;
 }
 domtools.QueryElementManipulation.text = function(query) {
 	var text = "";
@@ -2320,6 +2350,12 @@ autoform.ui.TextArea = function(field) {
 autoform.ui.TextArea.__name__ = ["autoform","ui","TextArea"];
 autoform.ui.TextArea.__super__ = autoform.AbstractField;
 for(var k in autoform.AbstractField.prototype ) autoform.ui.TextArea.prototype[k] = autoform.AbstractField.prototype[k];
+autoform.ui.TextArea.prototype.get = function() {
+	return domtools.QueryElementManipulation.val(domtools.QueryTraversing.find(this,"textarea"));
+}
+autoform.ui.TextArea.prototype.set = function(o) {
+	domtools.QueryElementManipulation.setText(domtools.QueryTraversing.find(this,"textarea"),o);
+}
 autoform.ui.TextArea.prototype.__class__ = autoform.ui.TextArea;
 haxe.rtti.Meta = function() { }
 haxe.rtti.Meta.__name__ = ["haxe","rtti","Meta"];
@@ -2338,12 +2374,14 @@ haxe.rtti.Meta.getFields = function(t) {
 haxe.rtti.Meta.prototype.__class__ = haxe.rtti.Meta;
 autoform.AutoForm = function(c,formID) {
 	if( c === $_ ) return;
+	var me = this;
 	domtools.AbstractCustomElement.call(this,"form");
 	if(formID == null) {
 		autoform.AutoForm.formIDIncrement = autoform.AutoForm.formIDIncrement + 1;
 		formID = "af-" + autoform.AutoForm.formIDIncrement;
 	}
-	this.fields = new Array();
+	this.fieldsInfo = new Array();
+	this.fields = new Hash();
 	this.classval = c;
 	var rttiString = c.__rtti;
 	var rtti = Xml.parse(rttiString).firstElement();
@@ -2351,10 +2389,15 @@ autoform.AutoForm = function(c,formID) {
 	var fieldsXml = rtti.elements();
 	while( fieldsXml.hasNext() ) {
 		var field = fieldsXml.next();
-		if(field.getNodeName() != "implements") this.fields.push(new autoform.FieldInfo(field,rtti,this.meta,formID));
+		if(field.getNodeName() != "implements") this.fieldsInfo.push(new autoform.FieldInfo(field,rtti,this.meta,formID));
 	}
 	var renderer = new autoform.renderer.DefaultRenderer(this);
-	renderer.run(this.fields);
+	renderer.run(this.fieldsInfo);
+	domtools.QueryEventManagement.on(this,"submit",function(e) {
+		e.preventDefault();
+		var newObject = me.readForm();
+		haxe.Log.trace(newObject,{ fileName : "AutoForm.hx", lineNumber : 58, className : "autoform.AutoForm", methodName : "new"});
+	});
 }
 autoform.AutoForm.__name__ = ["autoform","AutoForm"];
 autoform.AutoForm.__super__ = domtools.AbstractCustomElement;
@@ -2362,11 +2405,21 @@ for(var k in domtools.AbstractCustomElement.prototype ) autoform.AutoForm.protot
 autoform.AutoForm.prototype.classval = null;
 autoform.AutoForm.prototype.rtti = null;
 autoform.AutoForm.prototype.meta = null;
+autoform.AutoForm.prototype.fieldsInfo = null;
 autoform.AutoForm.prototype.fields = null;
 autoform.AutoForm.prototype.populateForm = function(object) {
 }
-autoform.AutoForm.prototype.readForm = function() {
-	var object = Type.createEmptyInstance(this.classval);
+autoform.AutoForm.prototype.readForm = function(originalObject) {
+	var object;
+	var isNewObject = true;
+	if(originalObject == null) object = Type.createInstance(this.classval,[]); else object = originalObject;
+	var $it0 = this.fields.keys();
+	while( $it0.hasNext() ) {
+		var fieldName = $it0.next();
+		var field = this.fields.get(fieldName);
+		var value = field.get();
+		object[fieldName] = value;
+	}
 	return object;
 }
 autoform.AutoForm.prototype.__class__ = autoform.AutoForm;
@@ -2397,6 +2450,12 @@ autoform.ui.HiddenField = function(field) {
 autoform.ui.HiddenField.__name__ = ["autoform","ui","HiddenField"];
 autoform.ui.HiddenField.__super__ = autoform.AbstractField;
 for(var k in autoform.AbstractField.prototype ) autoform.ui.HiddenField.prototype[k] = autoform.AbstractField.prototype[k];
+autoform.ui.HiddenField.prototype.get = function() {
+	return domtools.QueryElementManipulation.val(domtools.QueryTraversing.find(this,"input"));
+}
+autoform.ui.HiddenField.prototype.set = function(o) {
+	domtools.QueryElementManipulation.setVal(domtools.QueryTraversing.find(this,"input"),o);
+}
 autoform.ui.HiddenField.prototype.__class__ = autoform.ui.HiddenField;
 haxe.Log = function() { }
 haxe.Log.__name__ = ["haxe","Log"];
@@ -2502,10 +2561,10 @@ autoform.renderer.DefaultRenderer = function(form) {
 autoform.renderer.DefaultRenderer.__name__ = ["autoform","renderer","DefaultRenderer"];
 autoform.renderer.DefaultRenderer.__super__ = autoform.AbstractRenderer;
 for(var k in autoform.AbstractRenderer.prototype ) autoform.renderer.DefaultRenderer.prototype[k] = autoform.AbstractRenderer.prototype[k];
-autoform.renderer.DefaultRenderer.prototype.run = function(fields) {
+autoform.renderer.DefaultRenderer.prototype.run = function(fieldsInfo) {
 	var _g = 0;
-	while(_g < fields.length) {
-		var field = fields[_g];
+	while(_g < fieldsInfo.length) {
+		var field = fieldsInfo[_g];
 		++_g;
 		var thisClass = String;
 		var element;
@@ -2514,6 +2573,7 @@ autoform.renderer.DefaultRenderer.prototype.run = function(fields) {
 			var classOfFieldUI = this.displays.exists(display)?this.displays.get(display):this.displays.get("text");
 			element = Type.createInstance(classOfFieldUI,[field]);
 			domtools.QueryDOMManipulation.appendTo(element,null,this.form);
+			this.form.fields.set(field.id,element);
 		}
 	}
 	var buttonGroup = domtools.ElementManipulation.addClass(document.createElement("div"),"form-actions");

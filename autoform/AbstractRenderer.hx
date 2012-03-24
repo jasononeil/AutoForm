@@ -2,12 +2,12 @@ package autoform;
 
 import autoform.FieldInfo;
 import autoform.AutoForm;
-import domtools.AbstractCustomElement;
+import autoform.AbstractField;
 
 class AbstractRenderer
 {
 	public var form:AutoForm<Dynamic>;
-	public var displays:Hash<Class<AbstractCustomElement>>;
+	public var displays:Hash<Class<AbstractField<Dynamic>>>;
 
 	public function new(form:AutoForm<Dynamic>)
 	{

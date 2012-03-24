@@ -15,4 +15,17 @@ class HiddenField<T> extends autoform.AbstractField<T>
 		this.find("input").setAttr("type","hidden").setAttr("id",field.fullID);
 		
 	}
+
+	override public function get():T
+	{
+		//TODO: this is always returning a string, not T...
+		// have different classes for different types?
+		// override just these two methods?
+		return untyped this.find("input").val();
+	}
+
+	override public function set(o:T)
+	{
+		this.find("input").setVal(o);
+	}
 }

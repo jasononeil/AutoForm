@@ -3,15 +3,17 @@ package autoform;
 import domtools.Query;
 import js.w3c.level3.Core;
 import autoform.renderer.DefaultRenderer;
+import autoform.AbstractField;
 using domtools.Tools;
 
 class AutoForm<T> extends domtools.AbstractCustomElement
 {
 	static var formIDIncrement = 0;
-	var classval : Class<T>;
+	public var classval(default,null) : Class<T>;
 	var rtti:Node;
 	var meta:Dynamic;
-	var fields:Array<FieldInfo>;
+	var fieldsInfo:Array<FieldInfo>;
+	public var fields:Hash<AbstractField<Dynamic>>;
 	
 	/** Generates an empty form to match the Class <T>.  You must pass the type as the constructor, similar to SPOD managers. */
 	public function new( c : Class<T>, ?formID:String = null )
@@ -25,7 +27,8 @@ class AutoForm<T> extends domtools.AbstractCustomElement
 			formID = "af-" + formIDIncrement;
 		}
 
-		this.fields = new Array();
+		this.fieldsInfo = new Array();
+		this.fields = new Hash();
 
 		classval = c;
 		var rttiString : String = untyped c.__rtti;
@@ -41,13 +44,19 @@ class AutoForm<T> extends domtools.AbstractCustomElement
         	if (field.nodeName != "implements")
         	{
         		// trace (field);
-        		fields.push(new FieldInfo(field, rtti, meta, formID));
+        		fieldsInfo.push(new FieldInfo(field, rtti, meta, formID));
         	}
         	
         }
 
         var renderer = new DefaultRenderer(this);
-        renderer.run(fields);
+        renderer.run(fieldsInfo);
+
+        this.submit(function (e) { 
+			e.preventDefault();
+			var newObject = readForm();
+			trace (newObject);
+		});
 	}
 
 	/** Fills the form fields with values from an object of the correct type. */
@@ -57,9 +66,28 @@ class AutoForm<T> extends domtools.AbstractCustomElement
 	}
 
 	/** Read the form and create an object of the right type that matches the form values. */
-	public function readForm():T
+	public function readForm(?originalObject:T = null):T
 	{
-		var object = Type.createEmptyInstance(classval);
+		var object:T;
+
+		// are we creating a new object or updating an existing?
+		//TODO: make this check somehow... If 'id' field exists?
+		var isNewObject:Bool = true;
+
+		if (originalObject == null)
+			object = Type.createInstance(classval, []);
+			//object = Type.createEmptyInstance(classval);
+		else
+			object = originalObject;
+		
+		// Go through each field in the form
+		for (fieldName in this.fields.keys())
+		{
+			var field = this.fields.get(fieldName);
+			var value = field.get();
+			Reflect.setField(object, fieldName, value);
+		}
+
 		return object;
 	}
 
