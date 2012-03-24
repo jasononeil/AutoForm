@@ -51,12 +51,6 @@ class AutoForm<T> extends domtools.AbstractCustomElement
 
         var renderer = new DefaultRenderer(this);
         renderer.run(fieldsInfo);
-
-        this.submit(function (e) { 
-			e.preventDefault();
-			var newObject = readForm();
-			trace (newObject);
-		});
 	}
 
 	/** Fills the form fields with values from an object of the correct type. */

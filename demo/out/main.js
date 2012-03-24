@@ -2374,7 +2374,6 @@ haxe.rtti.Meta.getFields = function(t) {
 haxe.rtti.Meta.prototype.__class__ = haxe.rtti.Meta;
 autoform.AutoForm = function(c,formID) {
 	if( c === $_ ) return;
-	var me = this;
 	domtools.AbstractCustomElement.call(this,"form");
 	if(formID == null) {
 		autoform.AutoForm.formIDIncrement = autoform.AutoForm.formIDIncrement + 1;
@@ -2393,11 +2392,6 @@ autoform.AutoForm = function(c,formID) {
 	}
 	var renderer = new autoform.renderer.DefaultRenderer(this);
 	renderer.run(this.fieldsInfo);
-	domtools.QueryEventManagement.on(this,"submit",function(e) {
-		e.preventDefault();
-		var newObject = me.readForm();
-		haxe.Log.trace(newObject,{ fileName : "AutoForm.hx", lineNumber : 58, className : "autoform.AutoForm", methodName : "new"});
-	});
 }
 autoform.AutoForm.__name__ = ["autoform","AutoForm"];
 autoform.AutoForm.__super__ = domtools.AbstractCustomElement;
