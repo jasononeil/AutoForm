@@ -9,4 +9,4 @@
 # Commands to run afterward
 
 # Use lessc to compile our "less" stylesheet into css, see http://lesscss.org/
--cmd lessc demo/out/css/formstyle1.less demo/out/css/formstyle1.css
+#-cmd lessc demo/out/css/formstyle1.less demo/out/css/formstyle1.css

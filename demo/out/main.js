@@ -1286,6 +1286,9 @@ domtools.ElementManipulation.__name__ = ["domtools","ElementManipulation"];
 domtools.ElementManipulation.isElement = function(node) {
 	return node.nodeType == domtools.ElementManipulation.NodeTypeElement;
 }
+domtools.ElementManipulation.toQuery = function(n) {
+	return new domtools.Query(null,n);
+}
 domtools.ElementManipulation.attr = function(elm,attName) {
 	var ret = "";
 	if(domtools.ElementManipulation.isElement(elm)) {
@@ -2379,6 +2382,7 @@ autoform.AutoForm = function(c,formID) {
 		autoform.AutoForm.formIDIncrement = autoform.AutoForm.formIDIncrement + 1;
 		formID = "af-" + autoform.AutoForm.formIDIncrement;
 	}
+	this.formID = formID;
 	this.fieldsInfo = new Array();
 	this.fields = new Hash();
 	this.classval = c;
@@ -2396,12 +2400,20 @@ autoform.AutoForm = function(c,formID) {
 autoform.AutoForm.__name__ = ["autoform","AutoForm"];
 autoform.AutoForm.__super__ = domtools.AbstractCustomElement;
 for(var k in domtools.AbstractCustomElement.prototype ) autoform.AutoForm.prototype[k] = domtools.AbstractCustomElement.prototype[k];
+autoform.AutoForm.prototype.formID = null;
 autoform.AutoForm.prototype.classval = null;
 autoform.AutoForm.prototype.rtti = null;
 autoform.AutoForm.prototype.meta = null;
 autoform.AutoForm.prototype.fieldsInfo = null;
 autoform.AutoForm.prototype.fields = null;
 autoform.AutoForm.prototype.populateForm = function(object) {
+	var $it0 = this.fields.keys();
+	while( $it0.hasNext() ) {
+		var fieldName = $it0.next();
+		var field = this.fields.get(fieldName);
+		var value = Reflect.field(object,fieldName);
+		field.set(value);
+	}
 }
 autoform.AutoForm.prototype.readForm = function(originalObject) {
 	var object;

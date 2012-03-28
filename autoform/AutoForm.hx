@@ -9,6 +9,7 @@ using domtools.Tools;
 class AutoForm<T> extends domtools.AbstractCustomElement
 {
 	static var formIDIncrement = 0;
+	public var formID:String;
 	public var classval(default,null) : Class<T>;
 	var rtti:Node;
 	var meta:Dynamic;
@@ -26,6 +27,7 @@ class AutoForm<T> extends domtools.AbstractCustomElement
 			formIDIncrement = formIDIncrement + 1;
 			formID = "af-" + formIDIncrement;
 		}
+		this.formID = formID;
 
 		this.fieldsInfo = new Array();
 		this.fields = new Hash();
@@ -56,7 +58,13 @@ class AutoForm<T> extends domtools.AbstractCustomElement
 	/** Fills the form fields with values from an object of the correct type. */
 	public function populateForm(object:T)
 	{
-		
+		for (fieldName in fields.keys())
+		{
+
+			var field = this.fields.get(fieldName);
+			var value = Reflect.field(object, fieldName);
+			field.set(value);
+		}
 	}
 
 	/** Read the form and create an object of the right type that matches the form values. */
