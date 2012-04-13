@@ -4,9 +4,9 @@ import domtools.Query;
 import js.w3c.level3.Core;
 import autoform.renderer.DefaultRenderer;
 import autoform.AbstractField;
-using domtools.Tools;
+using DOMTools;
 
-class AutoForm<T> extends domtools.AbstractCustomElement
+class AutoForm<T> extends domtools.Widget
 {
 	static var formIDIncrement = 0;
 	public var formID:String;
@@ -19,7 +19,7 @@ class AutoForm<T> extends domtools.AbstractCustomElement
 	/** Generates an empty form to match the Class <T>.  You must pass the type as the constructor, similar to SPOD managers. */
 	public function new( c : Class<T>, ?formID:String = null )
 	{
-		super ("form");
+		super ("<form></form>");
 
 		// If formID isn't set, set one by using auto-increment "af-{int}"
 		if (formID == null)

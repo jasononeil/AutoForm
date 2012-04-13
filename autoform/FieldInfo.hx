@@ -2,7 +2,7 @@ package autoform;
 
 import js.w3c.level3.Core;
 import domtools.Query;
-using domtools.Tools;
+using DOMTools;
 using Reflect;
 
 class FieldInfo 

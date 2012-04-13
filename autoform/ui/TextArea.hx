@@ -1,14 +1,14 @@
 package autoform.ui;
 
 import domtools.Query;
-using domtools.Tools;
+using DOMTools;
 
 class TextArea extends autoform.AbstractField<String>
 {
 	public function new(field:FieldInfo)
 	{
 		// create a div
-		super ("div");
+		super ("<div></div>");
 		this.addClass("af-field-container").addClass(field.id);
 		this.setInnerHTML("<label></label><textarea></textarea><span />");
 

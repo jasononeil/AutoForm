@@ -1,14 +1,14 @@
 package autoform.ui;
 
 import domtools.Query;
-using domtools.Tools;
+using DOMTools;
 
 class CheckBox<T> extends autoform.AbstractField<T>
 {
 	public function new(field:FieldInfo)
 	{
 		// create a div
-		super ("div");
+		super ("<div></div>");
 		this.addClass("af-field-container").addClass(field.id);
 		this.setInnerHTML("<div><input /><label></label></div>");
 

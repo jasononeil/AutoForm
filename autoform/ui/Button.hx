@@ -1,15 +1,15 @@
 package autoform.ui;
 
 import domtools.Query;
-using domtools.Tools;
+using DOMTools;
 
-class Button extends domtools.AbstractCustomElement
+class Button extends domtools.Widget
 {
 	var type(default,setType):ButtonType;
 
 	public function new(?text:String = "Button", ?isSubmit:Bool = false, ?type:ButtonType = null)
 	{
-		super("button");
+		super("<button />");
 
 		this.addClass("btn");
 		this.setText(text);

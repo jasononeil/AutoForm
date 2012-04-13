@@ -23,7 +23,7 @@ Bindable Elements
 Here's a plan to do something like agility / backbone....
 (one question: how would we deal with sub objects: child.parent.name child.class.teacher etc)
 
-class HtmlBind<T:Model> extends AbstractCustomElement
+class HtmlBind<T:Model> extends Widget
 {
 	static var tpl = "<li data-bind-text='name'>...</li>"; // replaces text content with the model variable "name".
 	static var tpl2 = "<li data-bind-attr-id='objectID'>Object</li>"; // replaces the attribute "id" with the model variable "objectID".

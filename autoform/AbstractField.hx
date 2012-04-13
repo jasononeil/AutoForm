@@ -8,11 +8,11 @@ For example:
     tf.set("Jason"); // Will only accept a string
 
 */
-class AbstractField<T> extends domtools.AbstractCustomElement
+class AbstractField<T> extends domtools.Widget
 {
-	public function new(name:String)
+	public function new(html:String)
 	{
-		super(name);
+		super(html);
 	}
 
 	public function get():T

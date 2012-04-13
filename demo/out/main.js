@@ -234,7 +234,7 @@ domtools.Query.prototype.get_length = function() {
 	return this.collection.length;
 }
 domtools.Query.prototype.__class__ = domtools.Query;
-domtools.AbstractCustomElement = function(name) {
+domtools.Widget = function(name) {
 	if( name === $_ ) return;
 	domtools.Query.call(this);
 	var elm = document.createElement(name);
@@ -243,18 +243,18 @@ domtools.AbstractCustomElement = function(name) {
 		this;
 	}
 }
-domtools.AbstractCustomElement.__name__ = ["domtools","AbstractCustomElement"];
-domtools.AbstractCustomElement.__super__ = domtools.Query;
-for(var k in domtools.Query.prototype ) domtools.AbstractCustomElement.prototype[k] = domtools.Query.prototype[k];
-domtools.AbstractCustomElement.prototype.__class__ = domtools.AbstractCustomElement;
+domtools.Widget.__name__ = ["domtools","Widget"];
+domtools.Widget.__super__ = domtools.Query;
+for(var k in domtools.Query.prototype ) domtools.Widget.prototype[k] = domtools.Query.prototype[k];
+domtools.Widget.prototype.__class__ = domtools.Widget;
 if(typeof autoform=='undefined') autoform = {}
 autoform.AbstractField = function(name) {
 	if( name === $_ ) return;
-	domtools.AbstractCustomElement.call(this,name);
+	domtools.Widget.call(this,name);
 }
 autoform.AbstractField.__name__ = ["autoform","AbstractField"];
-autoform.AbstractField.__super__ = domtools.AbstractCustomElement;
-for(var k in domtools.AbstractCustomElement.prototype ) autoform.AbstractField.prototype[k] = domtools.AbstractCustomElement.prototype[k];
+autoform.AbstractField.__super__ = domtools.Widget;
+for(var k in domtools.Widget.prototype ) autoform.AbstractField.prototype[k] = domtools.Widget.prototype[k];
 autoform.AbstractField.prototype.get = function() {
 	throw "Abstract Method";
 	return null;
@@ -1277,10 +1277,10 @@ if(!haxe.rtti) haxe.rtti = {}
 haxe.rtti.Infos = function() { }
 haxe.rtti.Infos.__name__ = ["haxe","rtti","Infos"];
 haxe.rtti.Infos.prototype.__class__ = haxe.rtti.Infos;
-domtools.Tools = function(p) {
+DOMTools = function(p) {
 }
-domtools.Tools.__name__ = ["domtools","Tools"];
-domtools.Tools.prototype.__class__ = domtools.Tools;
+DOMTools.__name__ = ["domtools","Tools"];
+DOMTools.prototype.__class__ = DOMTools;
 domtools.ElementManipulation = function() { }
 domtools.ElementManipulation.__name__ = ["domtools","ElementManipulation"];
 domtools.ElementManipulation.isElement = function(node) {
@@ -2377,7 +2377,7 @@ haxe.rtti.Meta.getFields = function(t) {
 haxe.rtti.Meta.prototype.__class__ = haxe.rtti.Meta;
 autoform.AutoForm = function(c,formID) {
 	if( c === $_ ) return;
-	domtools.AbstractCustomElement.call(this,"form");
+	domtools.Widget.call(this,"form");
 	if(formID == null) {
 		autoform.AutoForm.formIDIncrement = autoform.AutoForm.formIDIncrement + 1;
 		formID = "af-" + autoform.AutoForm.formIDIncrement;
@@ -2398,8 +2398,8 @@ autoform.AutoForm = function(c,formID) {
 	renderer.run(this.fieldsInfo);
 }
 autoform.AutoForm.__name__ = ["autoform","AutoForm"];
-autoform.AutoForm.__super__ = domtools.AbstractCustomElement;
-for(var k in domtools.AbstractCustomElement.prototype ) autoform.AutoForm.prototype[k] = domtools.AbstractCustomElement.prototype[k];
+autoform.AutoForm.__super__ = domtools.Widget;
+for(var k in domtools.Widget.prototype ) autoform.AutoForm.prototype[k] = domtools.Widget.prototype[k];
 autoform.AutoForm.prototype.formID = null;
 autoform.AutoForm.prototype.classval = null;
 autoform.AutoForm.prototype.rtti = null;
@@ -2593,7 +2593,7 @@ autoform.ui.Button = function(text,isSubmit,type) {
 	if( text === $_ ) return;
 	if(isSubmit == null) isSubmit = false;
 	if(text == null) text = "Button";
-	domtools.AbstractCustomElement.call(this,"button");
+	domtools.Widget.call(this,"button");
 	domtools.QueryElementManipulation.addClass(this,"btn");
 	domtools.QueryElementManipulation.setText(this,text);
 	if(isSubmit) {
@@ -2604,8 +2604,8 @@ autoform.ui.Button = function(text,isSubmit,type) {
 	if(type != null) this.setType(type);
 }
 autoform.ui.Button.__name__ = ["autoform","ui","Button"];
-autoform.ui.Button.__super__ = domtools.AbstractCustomElement;
-for(var k in domtools.AbstractCustomElement.prototype ) autoform.ui.Button.prototype[k] = domtools.AbstractCustomElement.prototype[k];
+autoform.ui.Button.__super__ = domtools.Widget;
+for(var k in domtools.Widget.prototype ) autoform.ui.Button.prototype[k] = domtools.Widget.prototype[k];
 autoform.ui.Button.prototype.type = null;
 autoform.ui.Button.prototype.setType = function(t) {
 	domtools.QueryElementManipulation.removeClass(this,this.getClassForType(this.type));
