@@ -1,12 +1,12 @@
 package autoform;
 
-import domtools.Query;
+import dtx.DOMCollection;
 import js.w3c.level3.Core;
 import autoform.renderer.DefaultRenderer;
 import autoform.AbstractField;
-using DOMTools;
+using Detox;
 
-class AutoForm<T> extends domtools.Widget
+class AutoForm<T> extends dtx.Widget
 {
 	static var formIDIncrement = 0;
 	public var formID:String;
@@ -37,15 +37,12 @@ class AutoForm<T> extends domtools.Widget
         var rtti = Xml.parse(rttiString).firstElement();
 		meta = haxe.rtti.Meta.getFields(c);
 
-        // trace (rtti.toString());
-
         var fieldsXml = rtti.elements();
 
         for (field in fieldsXml)
         {
         	if (field.nodeName != "implements")
         	{
-        		// trace (field);
         		fieldsInfo.push(new FieldInfo(field, rtti, meta, formID));
         	}
         	

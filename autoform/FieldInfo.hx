@@ -1,8 +1,8 @@
 package autoform;
 
 import js.w3c.level3.Core;
-import domtools.Query;
-using DOMTools;
+import dtx.DOMCollection;
+using Detox;
 using Reflect;
 
 class FieldInfo 
@@ -57,7 +57,6 @@ class FieldInfo
 		//  <e> Enum
 		//  <f a="param1:param2">[<c> or <e> or <t>] for params</f>
 		//  <t path="Iterable"><c path="String"></c></t> = Iterable<String>
-		trace (field);
 		if (field.firstChild() != null)
 		{
 			var firstChild = field;
@@ -89,40 +88,49 @@ class FieldInfo
 		}
 
 		// Extract the metadata
-		if (meta.hasField(id))
+    	var fieldMeta = Reflect.field(meta,id);
+		if (fieldMeta != null)
     	{
-    		var fieldMeta = Reflect.field(meta,id);
-    		if (Reflect.hasField(fieldMeta,"autoform"))
+    		if (Reflect.field(fieldMeta,"autoform") != null)
     		{
+    			trace ("in here!");
     			// Get the autoform object from meta
     			var autoform:Dynamic = cast fieldMeta.autoform[0];
 
     			// Extract the human readable name
-    			if (Reflect.hasField(autoform,"title")) { title = autoform.field("title"); }
+    			title = autoform.field("title");
+    			if (title == null) title = "";
 
     			// Extract whether this is required
-    			if (Reflect.hasField(autoform,"required")) { required = autoform.field("required"); }
+    			required = autoform.field("required");
+    			if (required == null) required = false;
 
     			// Extract the description
-    			if (Reflect.hasField(autoform,"description")) { description = autoform.field("description"); }
+    			description = autoform.field("description");
+    			if (description == null) description = "";
     			
     			// Extract the help
-    			if (Reflect.hasField(autoform,"help")) { help = autoform.field("help"); }
+    			help = autoform.field("help");
+    			if (help == help) title = "";
     			
     			// Extract the placeholder
-    			if (Reflect.hasField(autoform,"placeholder")) { placeholder = autoform.field("placeholder"); }
+    			placeholder = autoform.field("placeholder");
+    			if (placeholder == placeholder) title = "";
     			
     			// Extract the validatorString
-    			if (Reflect.hasField(autoform,"validatorString")) { validatorString = autoform.field("validatorString"); }
+    			validatorString = autoform.field("validatorString");
+    			if (validatorString == null) validatorString = "";
     			
     			// Create the validator function
     			validator = createValidatorFunction(validatorString);
 
     			// Extract the display type
-    			if (Reflect.hasField(autoform,"display")) { display = autoform.field("display"); }
+    			display = autoform.field("display");
+    			if (display == null) display = "";
     			
     			// Extract the display options
-    			if (Reflect.hasField(autoform,"displayOptions")) { displayOptions = autoform.field("displayOptions"); }
+    			displayOptions = autoform.field("displayOptions");
+    			if (displayOptions == null) displayOptions = "";
     		}
     	}
 	}

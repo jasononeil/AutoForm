@@ -1,7 +1,7 @@
 package autoform.ui;
 
-import domtools.Query;
-using DOMTools;
+import dtx.DOMCollection;
+using Detox;
 
 class CheckBox<T> extends autoform.AbstractField<T>
 {
@@ -21,8 +21,7 @@ class CheckBox<T> extends autoform.AbstractField<T>
 		trace (field.description);
 		if (field.description != "")
 		{
-			trace ("hey?");
-			this.prepend(Query.create("p").setText(field.description));
+			this.prepend("p".create().setText(field.description));
 		}
 	}
 }

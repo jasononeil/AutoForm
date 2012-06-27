@@ -1,5 +1,5 @@
 package autoform.renderer;
-using DOMTools;
+using Detox;
 import autoform.ui.TextField;
 import autoform.ui.HiddenField;
 import autoform.ui.Button;
@@ -24,6 +24,7 @@ class DefaultRenderer extends autoform.AbstractRenderer
 	{
 		for (field in fieldsInfo)
 		{
+			trace (field);
 			var thisClass = String;
 			var element:AbstractField<Dynamic>;
 			var display = autoform.AbstractRenderer.guessDisplay(field);
@@ -41,7 +42,7 @@ class DefaultRenderer extends autoform.AbstractRenderer
 		}
 
 		// add buttons
-		var buttonGroup = domtools.Query.create("div").addClass("form-actions");
+		var buttonGroup = "div".create().addClass("form-actions");
 		var submit = new Button("Save", true);
 		var cancel = new Button("Cancel", ButtonType.Default);
 

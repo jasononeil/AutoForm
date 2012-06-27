@@ -8,7 +8,7 @@ For example:
     tf.set("Jason"); // Will only accept a string
 
 */
-class AbstractField<T> extends domtools.Widget
+class AbstractField<T> extends dtx.Widget
 {
 	public function new(html:String)
 	{

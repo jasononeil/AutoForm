@@ -1,7 +1,7 @@
 package autoform.ui;
 
-import domtools.Query;
-using DOMTools;
+import dtx.DOMCollection;
+using Detox;
 
 class TextArea extends autoform.AbstractField<String>
 {
