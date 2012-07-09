@@ -5,6 +5,7 @@ import js.w3c.level3.Core;
 import autoform.renderer.DefaultRenderer;
 import autoform.AbstractField;
 using Detox;
+using Lambda;
 
 class AutoForm<T> extends dtx.Widget
 {
@@ -41,7 +42,8 @@ class AutoForm<T> extends dtx.Widget
 
         for (field in fieldsXml)
         {
-        	if (field.nodeName != "implements")
+
+        	if (["implements", "extends"].has(field.nodeName) == false)
         	{
         		fieldsInfo.push(new FieldInfo(field, rtti, meta, formID));
         	}
