@@ -18,7 +18,6 @@ class CheckBox<T> extends autoform.AbstractField<T>
 		this.find("label").setText(field.title).setAttr("for",field.fullID);
 
 		// If there is a description, add it
-		trace (field.description);
 		if (field.description != "")
 		{
 			this.prepend("p".create().setText(field.description));

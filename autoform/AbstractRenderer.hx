@@ -53,7 +53,6 @@ class AbstractRenderer
 					null;
 				default:
 					// sensible fallback / default
-					trace ("Is this a function: " + field.type);
 					"text";
 				
 			}

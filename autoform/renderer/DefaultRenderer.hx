@@ -24,7 +24,6 @@ class DefaultRenderer extends autoform.AbstractRenderer
 	{
 		for (field in fieldsInfo)
 		{
-			trace (field);
 			var thisClass = String;
 			var element:AbstractField<Dynamic>;
 			var display = autoform.AbstractRenderer.guessDisplay(field);

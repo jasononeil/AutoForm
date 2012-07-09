@@ -93,7 +93,6 @@ class FieldInfo
     	{
     		if (Reflect.field(fieldMeta,"autoform") != null)
     		{
-    			trace ("in here!");
     			// Get the autoform object from meta
     			var autoform:Dynamic = cast fieldMeta.autoform[0];
 

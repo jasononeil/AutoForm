@@ -18,7 +18,6 @@ class Button extends dtx.Widget
 		{
 			this.setAttr("type", "submit");
 			if (type == null) { type = ButtonType.Primary; }
-			trace ("Type: " + type);
 		}
 
 		if (type != null)
