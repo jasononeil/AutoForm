@@ -111,11 +111,11 @@ class FieldInfo
     			
     			// Extract the help
     			help = autoform.field("help");
-    			if (help == help) title = "";
+    			if (help == null) help = "";
     			
     			// Extract the placeholder
     			placeholder = autoform.field("placeholder");
-    			if (placeholder == placeholder) title = "";
+    			if (placeholder == null) placeholder = "";
     			
     			// Extract the validatorString
     			validatorString = autoform.field("validatorString");

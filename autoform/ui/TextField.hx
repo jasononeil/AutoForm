@@ -13,15 +13,15 @@ class TextField extends autoform.AbstractField<String>
 		this.setInnerHTML("<label></label><input /><span />");
 
 		// set up the label and field to be linked, appropriate id
-		this.find("input").setAttr("type","text").setAttr("id",field.fullID).setAttr("placeholder",field.placeholder);
+		this.find("input").setAttr("type","text").setAttr("id",field.fullID);
 		this.find("label").setText(field.title).setAttr("for",field.fullID);
 
 
 		// If there is a description, add it
-		if (field.description != "")
-		{
-			this.find("span").setText(field.description).addClass("help-inline");
-		}
+		if (field.description != "") this.find("span").setText(field.description).addClass("help-inline");
+
+		// If there is a placeholder, add it
+		if (field.placeholder != "") this.find("input").setAttr("placeholder",field.placeholder);
 	}
 
 	override public function get():String
